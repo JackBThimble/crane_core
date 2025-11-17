@@ -1,0 +1,144 @@
+{
+  "crane_info": {
+    "manufacturer": "Grove",
+    "model": "GMK5250L",
+    "serial_number": null,
+    "crane_type": "AllTerrain",
+    "year": 2020,
+    "chart_revision": "Rev 2020-03"
+  },
+  "charts": [
+    {
+      "id": "gmk5250l_full_outriggers_main_boom",
+      "description": "Main boom, full outriggers, 360°",
+      "configuration": {
+        "support": {
+          "OnOutriggers": {
+            "extension": "Full",
+            "swing_restriction": "Full360"
+          }
+        },
+        "boom": {
+          "length": { "value": 154.2, "unit": "foot" },
+          "angle_range": null,
+          "jib": null
+        },
+        "counterweight": {
+          "weight": { "value": 110200, "unit": "pound" },
+          "configuration": "Standard"
+        },
+        "additional": {}
+      },
+      "capacity_data": {
+        "boom_lengths": [
+          { "value": 154.2, "unit": "foot" },
+          { "value": 177.2, "unit": "foot" },
+          { "value": 200.1, "unit": "foot" }
+        ],
+        "data": [
+          {
+            "20": { "value": 242500, "unit": "pound" },
+            "25": { "value": 222000, "unit": "pound" },
+            "30": { "value": 199500, "unit": "pound" },
+            "35": { "value": 173000, "unit": "pound" },
+            "40": { "value": 152000, "unit": "pound" },
+            "50": { "value": 119500, "unit": "pound" },
+            "60": { "value": 97000, "unit": "pound" },
+            "70": { "value": 81000, "unit": "pound" },
+            "80": { "value": 68500, "unit": "pound" },
+            "90": { "value": 58500, "unit": "pound" },
+            "100": { "value": 50500, "unit": "pound" },
+            "110": { "value": 44000, "unit": "pound" }
+          },
+          {
+            "25": { "value": 184000, "unit": "pound" },
+            "30": { "value": 165500, "unit": "pound" },
+            "35": { "value": 144500, "unit": "pound" },
+            "40": { "value": 126500, "unit": "pound" },
+            "50": { "value": 102000, "unit": "pound" },
+            "60": { "value": 83500, "unit": "pound" },
+            "70": { "value": 69500, "unit": "pound" },
+            "80": { "value": 59000, "unit": "pound" },
+            "90": { "value": 50500, "unit": "pound" },
+            "100": { "value": 43500, "unit": "pound" },
+            "110": { "value": 37500, "unit": "pound" },
+            "120": { "value": 32500, "unit": "pound" },
+            "130": { "value": 28500, "unit": "pound" }
+          },
+          {
+            "30": { "value": 141000, "unit": "pound" },
+            "35": { "value": 123500, "unit": "pound" },
+            "40": { "value": 108500, "unit": "pound" },
+            "50": { "value": 87500, "unit": "pound" },
+            "60": { "value": 72000, "unit": "pound" },
+            "70": { "value": 60000, "unit": "pound" },
+            "80": { "value": 50500, "unit": "pound" },
+            "90": { "value": 43500, "unit": "pound" },
+            "100": { "value": 37500, "unit": "pound" },
+            "110": { "value": 32500, "unit": "pound" },
+            "120": { "value": 28000, "unit": "pound" },
+            "130": { "value": 24500, "unit": "pound" },
+            "140": { "value": 21500, "unit": "pound" },
+            "150": { "value": 19000, "unit": "pound" }
+          }
+        ]
+      },
+      "units": {
+        "length": "Feet",
+        "weight": "Pounds"
+      },
+      "notes": [
+        "Capacities are based on freely suspended loads",
+        "Capacities do not exceed 85% of tipping loads",
+        "Boom must be centered over rear",
+        "Machine must be level within 1%"
+      ]
+    },
+    {
+      "id": "gmk5250l_on_rubber",
+      "description": "On rubber, over front, main boom",
+      "configuration": {
+        "support": {
+          "OnRubber": {
+            "speed_restriction": "Stationary"
+          }
+        },
+        "boom": {
+          "length": { "value": 154.2, "unit": "foot" },
+          "angle_range": null,
+          "jib": null
+        },
+        "counterweight": {
+          "weight": { "value": 110200, "unit": "pound" },
+          "configuration": "Standard"
+        },
+        "additional": {}
+      },
+      "capacity_data": {
+        "boom_lengths": [
+          { "value": 154.2, "unit": "foot" }
+        ],
+        "data": [
+          {
+            "20": { "value": 66000, "unit": "pound" },
+            "25": { "value": 59500, "unit": "pound" },
+            "30": { "value": 52500, "unit": "pound" },
+            "35": { "value": 44000, "unit": "pound" },
+            "40": { "value": 36000, "unit": "pound" },
+            "45": { "value": 28500, "unit": "pound" }
+          }
+        ]
+      },
+      "units": {
+        "length": "Feet",
+        "weight": "Pounds"
+      },
+      "notes": [
+        "On rubber capacities are significantly reduced",
+        "Crane must be stationary during lift",
+        "Boom must be over front",
+        "Machine must be level"
+      ]
+    }
+  ]
+}

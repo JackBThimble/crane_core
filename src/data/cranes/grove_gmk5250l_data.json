@@ -1,0 +1,295 @@
+{
+  "crane_info": {
+    "manufacturer": "Grove",
+    "model": "GMK5250L",
+    "serial_number": null,
+    "crane_type": "AllTerrain",
+    "year": 2020,
+    "chart_revision": "Rev 2020-03"
+  },
+  "charts": [
+    {
+      "id": "gmk5250l_full_outriggers_main_boom",
+      "description": "Main boom, full outriggers, 360°",
+      "configuration": {
+        "support": {
+          "OnOutriggers": {
+            "extension": "Full",
+            "swing_restriction": "Full360"
+          }
+        },
+        "boom": {
+          "length": {
+            "dimension": "length",
+            "units": "foot",
+            "value": 154.2
+          },
+          "angle_range": null,
+          "jib": null
+        },
+        "counterweight": {
+          "weight": {
+            "dimension": "mass",
+            "units": "pound",
+            "value": 110200.0
+          },
+          "configuration": "Standard"
+        },
+        "additional": {}
+      },
+      "capacity_data": {
+        "boom_lengths": [
+          {
+            "dimension": "length",
+            "units": "foot",
+            "value": 154.2
+          },
+          {
+            "dimension": "length",
+            "units": "foot",
+            "value": 177.2
+          },
+          {
+            "dimension": "length",
+            "units": "foot",
+            "value": 200.1
+          }
+        ],
+        "data": [
+          [
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 20.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 242500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 25.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 222000.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 30.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 199500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 40.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 152000.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 60.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 97000.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 80.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 68500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 100.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 50500.0
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 25.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 184000.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 30.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 165500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 40.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 126500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 60.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 83500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 80.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 59000.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 100.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 43500.0
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 30.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 141000.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 40.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 108500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 60.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 72000.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 80.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 50500.0
+              }
+            ],
+            [
+              {
+                "dimension": "length",
+                "units": "foot",
+                "value": 100.0
+              },
+              {
+                "dimension": "mass",
+                "units": "pound",
+                "value": 37500.0
+              }
+            ]
+          ]
+        ]
+      },
+      "units": {
+        "length": "Feet",
+        "weight": "Pounds"
+      },
+      "notes": [
+        "Capacities are based on freely suspended loads",
+        "Capacities do not exceed 85% of tipping loads",
+        "Boom must be centered over rear",
+        "Machine must be level within 1%"
+      ]
+    }
+  ]
+}
