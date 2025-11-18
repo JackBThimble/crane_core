@@ -1,6 +1,5 @@
 use nalgebra as na;
 use crate::types::*;
-use crate::types::units::*;
 use crate::kinematics::transforms::*;
 
 /// Joint configuration for a crane
@@ -15,7 +14,7 @@ pub struct JointConfig {
     pub boom_angle: Angle,
     
     /// Boom length (for telescoping booms)
-    pub boom_length: Distance,
+    pub boom_length: Length,
     
     /// Jib configuration (if present)
     pub jib: Option<JibConfig>,
@@ -27,7 +26,7 @@ pub struct JibConfig {
     pub jib_angle: Angle,
     
     /// Jib length
-    pub jib_length: Distance,
+    pub jib_length: Length,
     
     /// Jib offset angle (side-to-side tilt)
     pub jib_offset: Angle,
@@ -40,11 +39,11 @@ pub struct CraneBase {
     pub position: na::Point3<f64>,
     
     /// Height of boom pivot above ground
-    pub pivot_height: Distance,
+    pub pivot_height: Length,
 }
 
 impl CraneBase {
-    pub fn new(x: Distance, y: Distance, z: Distance, pivot_height: Distance) -> Self {
+    pub fn new(x: Length, y: Length, z: Length, pivot_height: Length) -> Self {
         Self {
             position: na::Point3::new(
                 x.get::<foot>(),
@@ -156,20 +155,20 @@ impl ForwardKinematics {
     }
     
     /// Calculate the reach (horizontal distance from crane centerline)
-    pub fn reach(&self, joints: &JointConfig) -> Distance {
+    pub fn reach(&self, joints: &JointConfig) -> Length {
         let hook = self.solve(joints);
         let base = self.base.position;
         
         let dx = hook.x - base.x;
         let dz = hook.z - base.z;
         
-        Distance::new::<foot>((dx*dx + dz*dz).sqrt())
+        Length::new::<foot>((dx*dx + dz*dz).sqrt())
     }
     
     /// Calculate hook height above ground
-    pub fn hook_height(&self, joints: &JointConfig) -> Distance {
+    pub fn hook_height(&self, joints: &JointConfig) -> Length {
         let hook = self.solve(joints);
-        Distance::new::<foot>(hook.y)
+        Length::new::<foot>(hook.y)
     }
 }
 
@@ -181,10 +180,10 @@ mod tests {
     #[test]
     fn test_simple_boom_forward_kinematics() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0), // Pivot 10ft up
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0), // Pivot 10ft up
         );
         
         let fk = ForwardKinematics::new(base);
@@ -193,7 +192,7 @@ mod tests {
         let joints = JointConfig {
             swing: Angle::new::<degree>(0.0),
             boom_angle: Angle::new::<degree>(45.0),
-            boom_length: Distance::new::<foot>(100.0),
+            boom_length: Length::new::<foot>(100.0),
             jib: None,
         };
         
@@ -212,10 +211,10 @@ mod tests {
     #[test]
     fn test_boom_with_swing() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let fk = ForwardKinematics::new(base);
@@ -224,7 +223,7 @@ mod tests {
         let joints = JointConfig {
             swing: Angle::new::<degree>(90.0),
             boom_angle: Angle::new::<degree>(45.0),
-            boom_length: Distance::new::<foot>(100.0),
+            boom_length: Length::new::<foot>(100.0),
             jib: None,
         };
         
@@ -239,10 +238,10 @@ mod tests {
     #[test]
     fn test_reach_calculation() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let fk = ForwardKinematics::new(base);
@@ -250,7 +249,7 @@ mod tests {
         let joints = JointConfig {
             swing: Angle::new::<degree>(0.0),
             boom_angle: Angle::new::<degree>(30.0), // Shallow angle
-            boom_length: Distance::new::<foot>(100.0),
+            boom_length: Length::new::<foot>(100.0),
             jib: None,
         };
         
@@ -263,10 +262,10 @@ mod tests {
     #[test]
     fn test_with_jib() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let fk = ForwardKinematics::new(base);
@@ -275,10 +274,10 @@ mod tests {
         let joints = JointConfig {
             swing: Angle::new::<degree>(0.0),
             boom_angle: Angle::new::<degree>(60.0),
-            boom_length: Distance::new::<foot>(80.0),
+            boom_length: Length::new::<foot>(80.0),
             jib: Some(JibConfig {
                 jib_angle: Angle::new::<degree>(-30.0),
-                jib_length: Distance::new::<foot>(40.0),
+                jib_length: Length::new::<foot>(40.0),
                 jib_offset: Angle::new::<degree>(0.0),
             }),
         };

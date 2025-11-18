@@ -20,7 +20,7 @@ pub struct TowerCrane {
     pub crane_type: TowerCraneType,
     
     /// Tower height (from base to slewing ring)
-    pub tower_height: Distance,
+    pub tower_height: Length,
     
     /// Jib configuration
     pub jib: TowerJib,
@@ -29,10 +29,10 @@ pub struct TowerCrane {
     pub slew_angle: Angle,
     
     /// Trolley position (distance from tower center along jib)
-    pub trolley_position: Distance,
+    pub trolley_position: Length,
     
     /// Hook height above trolley
-    pub hook_height: Distance,
+    pub hook_height: Length,
     
     /// Counterweight configuration
     pub counterweight: CounterweightConfig,
@@ -63,34 +63,34 @@ pub enum TowerCraneType {
 #[derive(Debug, Clone)]
 pub struct TowerJib {
     /// Jib length (tip to tower center)
-    pub length: Distance,
+    pub length: Length,
     
     /// Jib angle from horizontal (for luffing jibs)
     /// Fixed at 0° for hammerhead/flat-top
     pub angle: Angle,
     
     /// Minimum radius (can't get closer to tower than this)
-    pub min_radius: Distance,
+    pub min_radius: Length,
     
     /// Maximum radius (jib tip)
-    pub max_radius: Distance,
+    pub max_radius: Length,
 }
 
 /// Counterweight configuration
 #[derive(Debug, Clone)]
 pub struct CounterweightConfig {
     /// Total counterweight mass
-    pub weight: Weight,
+    pub weight: Mass,
     
-    /// Distance from slewing center to counterweight COG
-    pub radius: Distance,
+    /// Length from slewing center to counterweight COG
+    pub radius: Length,
     
     /// Counterweight moment (weight × radius)
     pub moment: TowerMoment,
 }
 
 impl CounterweightConfig {
-    pub fn new(weight: Weight, radius: Distance) -> Self {
+    pub fn new(weight: Mass, radius: Length) -> Self {
         let moment = TowerMoment::new(
             weight.get::<pound>() * radius.get::<foot>()
         );
@@ -134,7 +134,7 @@ impl TowerMoment {
     }
     
     /// Calculate moment from load and radius
-    pub fn from_load(load: Weight, radius: Distance) -> Self {
+    pub fn from_load(load: Mass, radius: Length) -> Self {
         Self(load.get::<pound>() * radius.get::<foot>())
     }
 }
@@ -320,14 +320,14 @@ impl TowerCrane {
         manufacturer: impl Into<String>,
         model: impl Into<String>,
         crane_type: TowerCraneType,
-        tower_height: Distance,
-        jib_length: Distance,
+        tower_height: Length,
+        jib_length: Length,
         max_moment: TowerMoment,
     ) -> Self {
         let jib = TowerJib {
             length: jib_length,
             angle: Angle::new::<degree>(0.0),
-            min_radius: Distance::new::<foot>(20.0), // Typical minimum
+            min_radius: Length::new::<foot>(20.0), // Typical minimum
             max_radius: jib_length,
         };
         
@@ -338,11 +338,11 @@ impl TowerCrane {
             tower_height,
             jib,
             slew_angle: Angle::new::<degree>(0.0),
-            trolley_position: Distance::new::<foot>(50.0),
-            hook_height: Distance::new::<foot>(0.0),
+            trolley_position: Length::new::<foot>(50.0),
+            hook_height: Length::new::<foot>(0.0),
             counterweight: CounterweightConfig::new(
-                Weight::new::<pound>(20000.0),
-                Distance::new::<foot>(20.0),
+                Mass::new::<pound>(20000.0),
+                Length::new::<foot>(20.0),
             ),
             max_moment,
             moment_limiter: MomentLimiter::new(max_moment, SafetyMargins::standard()).unwrap(),
@@ -352,54 +352,54 @@ impl TowerCrane {
     /// Calculate current load moment
     /// 
     /// This is THE critical calculation for tower cranes
-    pub fn load_moment(&self, load: Weight) -> TowerMoment {
+    pub fn load_moment(&self, load: Mass) -> TowerMoment {
         TowerMoment::from_load(load, self.trolley_position)
     }
     
     /// Calculate available capacity at current trolley position
     /// 
     /// Capacity = Max Moment / Current Radius
-    pub fn capacity_at_current_position(&self) -> Weight {
+    pub fn capacity_at_current_position(&self) -> Mass {
         let radius = self.trolley_position.get::<foot>();
         
         if radius < 0.01 {
             // Can't lift at zero radius (physically impossible)
-            return Weight::new::<pound>(0.0);
+            return Mass::new::<pound>(0.0);
         }
         
         let capacity_lb = self.max_moment.0 / radius;
-        Weight::new::<pound>(capacity_lb)
+        Mass::new::<pound>(capacity_lb)
     }
     
     /// Calculate capacity at any trolley position
-    pub fn capacity_at_radius(&self, radius: Distance) -> Weight {
+    pub fn capacity_at_radius(&self, radius: Length) -> Mass {
         let r = radius.get::<foot>();
         
         if r < self.jib.min_radius.get::<foot>() {
-            return Weight::new::<pound>(0.0);
+            return Mass::new::<pound>(0.0);
         }
         
         if r > self.jib.max_radius.get::<foot>() {
-            return Weight::new::<pound>(0.0);
+            return Mass::new::<pound>(0.0);
         }
         
         let capacity_lb = self.max_moment.0 / r;
-        Weight::new::<pound>(capacity_lb)
+        Mass::new::<pound>(capacity_lb)
     }
     
     /// Set trolley position (with range checking)
-    pub fn set_trolley_position(&mut self, radius: Distance) -> Result<(), TowerCraneError> {
+    pub fn set_trolley_position(&mut self, radius: Length) -> Result<(), TowerCraneError> {
         if radius < self.jib.min_radius {
             return Err(TowerCraneError::RadiusTooSmall {
-                requested: DisplayDistance(radius),
-                minimum: DisplayDistance(self.jib.min_radius),
+                requested: DisplayLength(radius),
+                minimum: DisplayLength(self.jib.min_radius),
             });
         }
         
         if radius > self.jib.max_radius {
             return Err(TowerCraneError::RadiusTooLarge {
-                requested: DisplayDistance(radius),
-                maximum: DisplayDistance(self.jib.max_radius),
+                requested: DisplayLength(radius),
+                maximum: DisplayLength(self.jib.max_radius),
             });
         }
         
@@ -432,13 +432,13 @@ impl TowerCrane {
     }
     
     /// Check moment limiter for given load
-    pub fn check_moment_limiter(&self, load: Weight) -> LimiterStatus {
+    pub fn check_moment_limiter(&self, load: Mass) -> LimiterStatus {
         let moment = self.load_moment(load);
         self.moment_limiter.check(moment)
     }
     
     /// Validate if lift is safe at current configuration
-    pub fn validate_lift(&self, load: Weight) -> Result<TowerLiftAnalysis, TowerCraneError> {
+    pub fn validate_lift(&self, load: Mass) -> Result<TowerLiftAnalysis, TowerCraneError> {
         // Check moment capacity
         let load_moment = self.load_moment(load);
         
@@ -452,15 +452,15 @@ impl TowerCrane {
         // Check trolley position
         if self.trolley_position < self.jib.min_radius {
             return Err(TowerCraneError::RadiusTooSmall {
-                requested: DisplayDistance(self.trolley_position),
-                minimum: DisplayDistance(self.jib.min_radius),
+                requested: DisplayLength(self.trolley_position),
+                minimum: DisplayLength(self.jib.min_radius),
             });
         }
         
         if self.trolley_position > self.jib.max_radius {
             return Err(TowerCraneError::RadiusTooLarge {
-                requested: DisplayDistance(self.trolley_position),
-                maximum: DisplayDistance(self.jib.max_radius),
+                requested: DisplayLength(self.trolley_position),
+                maximum: DisplayLength(self.jib.max_radius),
             });
         }
         
@@ -493,11 +493,11 @@ impl TowerCrane {
 /// Tower crane lift analysis results
 #[derive(Debug)]
 pub struct TowerLiftAnalysis {
-    pub load: Weight,
-    pub radius: Distance,
+    pub load: Mass,
+    pub radius: Length,
     pub load_moment: TowerMoment,
     pub max_moment: TowerMoment,
-    pub capacity: Weight,
+    pub capacity: Mass,
     pub utilization: f64,
     pub limiter_status: LimiterStatus,
     pub is_safe: bool,
@@ -513,14 +513,14 @@ pub enum TowerCraneError {
     
     #[error("Radius {requested} is less than minimum {minimum}")]
     RadiusTooSmall {
-        requested: DisplayDistance,
-        minimum: DisplayDistance,
+        requested: DisplayLength,
+        minimum: DisplayLength,
     },
     
     #[error("Radius {requested} exceeds maximum {maximum}")]
     RadiusTooLarge {
-        requested: DisplayDistance,
-        maximum: DisplayDistance,
+        requested: DisplayLength,
+        maximum: DisplayLength,
     },
     
     #[error("Moment limiter shutdown: current moment {current_moment}")]
@@ -551,7 +551,7 @@ impl Crane for TowerCrane {
         todo!("Tower cranes use moment ratings, not load charts")
     }
     
-    fn system_cog(&self, load: Weight) -> na::Point3<f64> {
+    fn system_cog(&self, load: Mass) -> na::Point3<f64> {
         // Calculate system COG including load and counterweight
         let hook = self.hook_position();
         let cw_radius = self.counterweight.radius.get::<foot>();
@@ -572,23 +572,23 @@ impl Crane for TowerCrane {
         na::Point3::from(weighted_pos)
     }
     
-    fn tipping_moment(&self, load: Weight) -> f64 {
+    fn tipping_moment(&self, load: Mass) -> f64 {
         // Tower cranes don't "tip" in the traditional sense
         // They're rated by moment capacity
         self.load_moment(load).0
     }
     
-    fn rated_capacity(&self) -> Weight {
+    fn rated_capacity(&self) -> Mass {
         self.capacity_at_current_position()
     }
     
-    fn validate_lift(&self, load: Weight) -> Result<(), LiftError> {
+    fn validate_lift(&self, load: Mass) -> Result<(), LiftError> {
         match self.validate_lift(load) {
             Ok(_) => Ok(()),
             Err(TowerCraneError::MomentExceeded { load_moment, max_moment }) => {
                 Err(LiftError::OverCapacity {
                     load,
-                    capacity: Weight::new::<pound>(max_moment.0.ft_lb() / self.trolley_position.get::<foot>()),
+                    capacity: Mass::new::<pound>(max_moment.0.ft_lb() / self.trolley_position.get::<foot>()),
                 })
             }
             Err(_) => Err(LiftError::LoadChartExceeded {
@@ -600,7 +600,7 @@ impl Crane for TowerCrane {
     fn forward_kinematics(&self) -> ForwardKinematics {
         let base = CraneBase {
             position: na::Point3::origin(),
-            pivot_height: Distance::new::<foot>(0.0),
+            pivot_height: Length::new::<foot>(0.0),
         };
         ForwardKinematics::new(base)
     }
@@ -631,15 +631,15 @@ mod tests {
             "Liebherr",
             "280 EC-H 12",
             TowerCraneType::FlatTop,
-            Distance::new::<foot>(200.0),
-            Distance::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
             TowerMoment::new(1_000_000.0), // 1M ft-lb moment capacity
         );
         
         // 10,000 lb load at 100 ft = 1,000,000 ft-lb moment
-        let load = Weight::new::<pound>(10000.0);
+        let load = Mass::new::<pound>(10000.0);
         let mut test_crane = crane.clone();
-        test_crane.trolley_position = Distance::new::<foot>(100.0);
+        test_crane.trolley_position = Length::new::<foot>(100.0);
         
         let moment = test_crane.load_moment(load);
         
@@ -652,18 +652,18 @@ mod tests {
             "Liebherr",
             "280 EC-H 12",
             TowerCraneType::FlatTop,
-            Distance::new::<foot>(200.0),
-            Distance::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
             TowerMoment::new(1_000_000.0),
         );
         
         // At 50 ft: capacity = 1,000,000 / 50 = 20,000 lbs
-        let capacity = crane.capacity_at_radius(Distance::new::<foot>(50.0));
+        let capacity = crane.capacity_at_radius(Length::new::<foot>(50.0));
         
         assert_relative_eq!(capacity.get::<pound>(), 20000.0);
         
         // At 100 ft: capacity = 1,000,000 / 100 = 10,000 lbs
-        let capacity = crane.capacity_at_radius(Distance::new::<foot>(100.0));
+        let capacity = crane.capacity_at_radius(Length::new::<foot>(100.0));
         
         assert_relative_eq!(capacity.get::<pound>(), 10000.0);
     }
@@ -674,20 +674,20 @@ mod tests {
             "Liebherr",
             "280 EC-H 12",
             TowerCraneType::FlatTop,
-            Distance::new::<foot>(200.0),
-            Distance::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
             TowerMoment::new(1_000_000.0),
         );
         
         let mut test_crane = crane.clone();
-        test_crane.trolley_position = Distance::new::<foot>(100.0);
+        test_crane.trolley_position = Length::new::<foot>(100.0);
         
         // Safe load (9,000 lbs at 100 ft = 900,000 ft-lb)
-        let safe_status = test_crane.check_moment_limiter(Weight::new::<pound>(9000.0));
+        let safe_status = test_crane.check_moment_limiter(Mass::new::<pound>(9000.0));
         assert_eq!(safe_status, LimiterStatus::Warning);
         
         // Overload (11,000 lbs at 100 ft = 1,100,000 ft-lb)
-        let overload_status = test_crane.check_moment_limiter(Weight::new::<pound>(11000.0));
+        let overload_status = test_crane.check_moment_limiter(Mass::new::<pound>(11000.0));
         assert_eq!(overload_status, LimiterStatus::Shutdown);
     }
     
@@ -697,21 +697,21 @@ mod tests {
             "Liebherr",
             "280 EC-H 12",
             TowerCraneType::FlatTop,
-            Distance::new::<foot>(200.0),
-            Distance::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
+            Length::new::<foot>(200.0),
             TowerMoment::new(1_000_000.0),
         );
         
         let mut test_crane = crane.clone();
-        test_crane.trolley_position = Distance::new::<foot>(100.0);
+        test_crane.trolley_position = Length::new::<foot>(100.0);
         
         // Safe lift
-        let analysis = test_crane.validate_lift(Weight::new::<pound>(8000.0)).unwrap();
+        let analysis = test_crane.validate_lift(Mass::new::<pound>(8000.0)).unwrap();
         assert!(analysis.is_safe);
         assert_relative_eq!(analysis.utilization, 0.8, epsilon = 0.01);
         
         // Overload
-        let result = test_crane.validate_lift(Weight::new::<pound>(12000.0));
+        let result = test_crane.validate_lift(Mass::new::<pound>(12000.0));
         assert!(result.is_err());
     }
 }

@@ -25,22 +25,22 @@ pub trait Crane {
     fn configuration(&self) -> CraneConfig;
     
     /// Calculate boom tip position given current joint angles
-    fn tip_position(&self) -> na::Point3<f64>;
+    fn tip_position(&self) -> na::Point3<Length>;
     
     /// Get the load chart for current configuration
     fn load_chart(&self) -> &LoadChart;
     
     /// Calculate center of gravity of entire crane + load system
-    fn system_cog(&self, load: Weight) -> na::Point3<f64>;
+    fn system_cog(&self, load: Mass) -> na::Point3<Length>;
     
     /// Calculate tipping moment for given load at current position
-    fn tipping_moment(&self, load: Weight) -> f64;
+    fn tipping_moment(&self, load: Mass) -> Torque;
     
     /// Maximum rated capacity at current configuration
-    fn rated_capacity(&self) -> Weight;
+    fn rated_capacity(&self) -> Mass;
     
     /// Validate if lift is within safety parameters
-    fn validate_lift(&self, load: Weight) -> Result<(), LiftError>;
+    fn validate_lift(&self, load: Mass) -> Result<(), LiftError>;
     
     /// Get forward kinematics solver for this crane
     fn forward_kinematics(&self) -> ForwardKinematics;
@@ -55,19 +55,19 @@ pub trait Crane {
 
 #[derive(Debug, Clone)]
 pub struct CraneConfig {
-    pub boom_length: Distance,
+    pub boom_length: Length,
     pub boom_angle: Angle,  // From horizontal
-    pub radius: Distance,   // Horizontal distance from centerline
-    pub height: Distance,   // Hook height above ground
+    pub radius: Length,   // Horizontal distance from centerline
+    pub height: Length,   // Hook height above ground
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum LiftError {
     #[error("Load {load:?} exceeds rated capacity {capacity:?}")]
-    OverCapacity { load: Weight, capacity: Weight },
+    OverCapacity { load: Mass, capacity: Mass },
     
     #[error("Configuration exceeds load chart at radius {radius:?}")]
-    LoadChartExceeded { radius: Distance },
+    LoadChartExceeded { radius: Length },
     
     #[error("Tipping moment {moment} exceeds stability limit {limit}")]
     TippingRisk { moment: f64, limit: f64 },

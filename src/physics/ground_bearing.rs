@@ -28,13 +28,13 @@ pub struct GroundBearingAnalysis {
     pub support_points: Vec<SupportPoint>,
 
     /// Total crane weight (excluding load)
-    pub crane_weight: Weight,
+    pub crane_weight: Mass,
 
     /// Crane center of gravity (in crane coordinate system)
     pub crane_cog: na::Point3<f64>,
 
     /// Load weight
-    pub load_weight: Weight,
+    pub load_weight: Mass,
 
     /// Load position (hook position)
     pub load_position: na::Point3<f64>,
@@ -104,19 +104,19 @@ impl GroundBearingAnalysis {
     /// * `load_weight` - Load weight
     /// * `load_position` - Load position
     pub fn new(
-        crane_weight: Weight,
-        crane_cog: (Distance, Distance, Distance),
-        load_weight: Weight,
-        load_position: (Distance, Distance, Distance),
+        crane_weight: Mass,
+        crane_cog: (Length, Length, Length),
+        load_weight: Mass,
+        load_position: (Length, Length, Length),
     ) -> Self {
         let (cx, cy, cz) = crane_cog;
         let (lx, ly, lz) = load_position;
 
         Self::new_na(
             crane_weight,
-            point_from_distances(cx, cy, cz),
+            point_from_uom_lengths(cx, cy, cz),
             load_weight,
-            point_from_distances(lx, ly, lz),
+            point_from_uom_lengths(lx, ly, lz),
         )
     }
 
@@ -128,9 +128,9 @@ impl GroundBearingAnalysis {
     /// * `load_weight` - Load weight
     /// * `load_position` - Load position (feet)
     pub fn new_na(
-        crane_weight: Weight,
+        crane_weight: Mass,
         crane_cog: na::Point3<f64>,
-        load_weight: Weight,
+        load_weight: Mass,
         load_position: na::Point3<f64>,
     ) -> Self {
         Self {
@@ -146,14 +146,14 @@ impl GroundBearingAnalysis {
     pub fn add_support(
         &mut self,
         name: impl Into<String>,
-        x: Distance,
-        y: Distance,
-        z: Distance,
+        x: Length,
+        y: Length,
+        z: Length,
         contact_area: Area,
     ) {
         self.add_support_na(
             name, 
-            point_from_distances(x, y, z),
+            point_from_uom_lengths(x, y, z),
             contact_area,
         );
     }
@@ -178,7 +178,7 @@ impl GroundBearingAnalysis {
     }
 
     /// Get crane COG
-    pub fn crane_cog(&self) -> (Distance, Distance, Distance) {
+    pub fn crane_cog(&self) -> (Length, Length, Length) {
         (
             from_coord(self.crane_cog.x),
             from_coord(self.crane_cog.y),
@@ -466,17 +466,17 @@ mod tests {
     #[test]
     fn test_centered_load() {
         let mut analysis = GroundBearingAnalysis::new(
-            Weight::new::<pound>(100000.0),
-(Distance::new::<foot>(0.0), Distance::new::<foot>(5.0), Distance::new::<foot>(0.0)),
-            Weight::new::<pound>(50000.0),
-(Distance::new::<foot>(0.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)),
+            Mass::new::<pound>(100000.0),
+(Length::new::<foot>(0.0), Length::new::<foot>(5.0), Length::new::<foot>(0.0)),
+            Mass::new::<pound>(50000.0),
+(Length::new::<foot>(0.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)),
         );
 
         let pad_area = Area::new::<square_foot>(4.0);
-        analysis.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-        analysis.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-        analysis.add_support("RR", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
-        analysis.add_support("RL", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
+        analysis.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+        analysis.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+        analysis.add_support("RR", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
+        analysis.add_support("RL", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
 
         let result = analysis.calculate_reactions().unwrap();
 

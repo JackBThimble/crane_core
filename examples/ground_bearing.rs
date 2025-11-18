@@ -71,17 +71,17 @@ fn main() {
 
 fn test_centered_load() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
+        Mass::new::<pound>(100000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(8.0), // 8ft high COG
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(8.0), // 8ft high COG
+            Length::new::<foot>(0.0),
         ),
-        Weight::new::<pound>(50000.0),
+        Mass::new::<pound>(50000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(60.0),
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(60.0),
+            Length::new::<foot>(0.0),
         ),
     );
 
@@ -89,24 +89,24 @@ fn test_centered_load() {
     let spread = 10.0;
 
 analysis.add_support("Front-Left", 
-        Distance::new::<foot>(-spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(spread), 
+        Length::new::<foot>(-spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(spread), 
         pad_area);
     analysis.add_support("Front-Right", 
-        Distance::new::<foot>(spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(spread), 
+        Length::new::<foot>(spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(spread), 
         pad_area);
     analysis.add_support("Rear-Left", 
-        Distance::new::<foot>(-spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(-spread), 
+        Length::new::<foot>(-spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(-spread), 
         pad_area);
     analysis.add_support("Rear-Right", 
-        Distance::new::<foot>(spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(-spread), 
+        Length::new::<foot>(spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(-spread), 
         pad_area);
     
     match analysis.calculate_reactions() {
@@ -121,27 +121,27 @@ analysis.add_support("Front-Left",
 
 fn test_side_load() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
+        Mass::new::<pound>(100000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(8.0),
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(8.0),
+            Length::new::<foot>(0.0),
         ),
-        Weight::new::<pound>(50000.0),
+        Mass::new::<pound>(50000.0),
         (
-            Distance::new::<foot>(80.0),   // 80 ft to the right (side load)
-            Distance::new::<foot>(50.0),
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(80.0),   // 80 ft to the right (side load)
+            Length::new::<foot>(50.0),
+            Length::new::<foot>(0.0),
         ),
     );
     
     let pad_area = Area::new::<square_foot>(4.0);
     let spread = 10.0;
     
-    analysis.add_support("Front-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Front-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Rear-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
-    analysis.add_support("Rear-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
+    analysis.add_support("Front-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Front-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Rear-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
+    analysis.add_support("Rear-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
     
     match analysis.calculate_reactions() {
         Ok(result) => {
@@ -155,27 +155,27 @@ fn test_side_load() {
 
 fn test_rear_load() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
+        Mass::new::<pound>(100000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(8.0),
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(8.0),
+            Length::new::<foot>(0.0),
         ),
-        Weight::new::<pound>(50000.0),
+        Mass::new::<pound>(50000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(40.0),
-            Distance::new::<foot>(-60.0),  // 60 ft behind crane (over-rear)
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(40.0),
+            Length::new::<foot>(-60.0),  // 60 ft behind crane (over-rear)
         ),
     );
     
     let pad_area = Area::new::<square_foot>(4.0);
     let spread = 10.0;
     
-    analysis.add_support("Front-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Front-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Rear-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
-    analysis.add_support("Rear-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
+    analysis.add_support("Front-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Front-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Rear-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
+    analysis.add_support("Rear-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
     
     match analysis.calculate_reactions() {
         Ok(result) => {
@@ -189,18 +189,18 @@ fn test_rear_load() {
 
 fn test_soil_validation() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
-        (Distance::new::<foot>(0.0), Distance::new::<foot>(8.0), Distance::new::<foot>(0.0)),
-        Weight::new::<pound>(50000.0),
-        (Distance::new::<foot>(60.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)),
+        Mass::new::<pound>(100000.0),
+        (Length::new::<foot>(0.0), Length::new::<foot>(8.0), Length::new::<foot>(0.0)),
+        Mass::new::<pound>(50000.0),
+        (Length::new::<foot>(60.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)),
     );
     
     // Small pads
     let small_pad = Area::new::<square_foot>(1.0);
-    analysis.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), small_pad);
-    analysis.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), small_pad);
-    analysis.add_support("RL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), small_pad);
-    analysis.add_support("RR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), small_pad);
+    analysis.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), small_pad);
+    analysis.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), small_pad);
+    analysis.add_support("RL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), small_pad);
+    analysis.add_support("RR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), small_pad);
     
     println!("Testing on soft clay (1000 psf / 10 PSI):");
     match analysis.validate_soil_capacity(soil_capacities::soft_clay()) {
@@ -216,17 +216,17 @@ fn test_soil_validation() {
     
     // Now with larger pads
     let mut analysis2 = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
-        (Distance::new::<foot>(0.0), Distance::new::<foot>(8.0), Distance::new::<foot>(0.0)),
-        Weight::new::<pound>(50000.0),
-        (Distance::new::<foot>(60.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)),
+        Mass::new::<pound>(100000.0),
+        (Length::new::<foot>(0.0), Length::new::<foot>(8.0), Length::new::<foot>(0.0)),
+        Mass::new::<pound>(50000.0),
+        (Length::new::<foot>(60.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)),
     );
     
     let large_pad = Area::new::<square_foot>(16.0);  // 4x4 ft mats
-    analysis2.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), large_pad);
-    analysis2.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), large_pad);
-    analysis2.add_support("RL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), large_pad);
-    analysis2.add_support("RR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), large_pad);
+    analysis2.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), large_pad);
+    analysis2.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), large_pad);
+    analysis2.add_support("RL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), large_pad);
+    analysis2.add_support("RR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), large_pad);
     
     println!("\nWith 4x4 ft mats on soft clay:");
     match analysis2.validate_soil_capacity(soil_capacities::soft_clay()) {
@@ -237,17 +237,17 @@ fn test_soil_validation() {
 
 fn test_mat_sizing() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
-        (Distance::new::<foot>(0.0), Distance::new::<foot>(8.0), Distance::new::<foot>(0.0)),
-        Weight::new::<pound>(50000.0),
-        (Distance::new::<foot>(80.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)),
+        Mass::new::<pound>(100000.0),
+        (Length::new::<foot>(0.0), Length::new::<foot>(8.0), Length::new::<foot>(0.0)),
+        Mass::new::<pound>(50000.0),
+        (Length::new::<foot>(80.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)),
     );
     
     let pad_area = Area::new::<square_foot>(4.0);
-    analysis.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-    analysis.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-    analysis.add_support("RL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
-    analysis.add_support("RR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
+    analysis.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+    analysis.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+    analysis.add_support("RL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
+    analysis.add_support("RR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
     
     println!("Current pad size: 2x2 ft (4 sq ft)");
     
@@ -276,17 +276,17 @@ fn test_mat_sizing() {
 
 fn test_centered_load_2() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),  // 100k lb crane
+        Mass::new::<pound>(100000.0),  // 100k lb crane
         (
-            Distance::new::<foot>(0.0),   // Centered
-            Distance::new::<foot>(8.0),   // 8 ft high COG
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),   // Centered
+            Length::new::<foot>(8.0),   // 8 ft high COG
+            Length::new::<foot>(0.0),
         ),
-        Weight::new::<pound>(50000.0),   // 50k lb load
+        Mass::new::<pound>(50000.0),   // 50k lb load
         (
-            Distance::new::<foot>(0.0),   // Centered
-            Distance::new::<foot>(60.0),  // 60 ft hook height
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),   // Centered
+            Length::new::<foot>(60.0),  // 60 ft hook height
+            Length::new::<foot>(0.0),
         ),
     );
     
@@ -295,24 +295,24 @@ fn test_centered_load_2() {
     let spread = 10.0;
     
     analysis.add_support("Front-Left", 
-        Distance::new::<foot>(-spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(spread), 
+        Length::new::<foot>(-spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(spread), 
         pad_area);
     analysis.add_support("Front-Right", 
-        Distance::new::<foot>(spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(spread), 
+        Length::new::<foot>(spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(spread), 
         pad_area);
     analysis.add_support("Rear-Left", 
-        Distance::new::<foot>(-spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(-spread), 
+        Length::new::<foot>(-spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(-spread), 
         pad_area);
     analysis.add_support("Rear-Right", 
-        Distance::new::<foot>(spread), 
-        Distance::new::<foot>(0.0), 
-        Distance::new::<foot>(-spread), 
+        Length::new::<foot>(spread), 
+        Length::new::<foot>(0.0), 
+        Length::new::<foot>(-spread), 
         pad_area);
     
     match analysis.calculate_reactions() {
@@ -327,27 +327,27 @@ fn test_centered_load_2() {
 
 fn test_side_load_2() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
+        Mass::new::<pound>(100000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(8.0),
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(8.0),
+            Length::new::<foot>(0.0),
         ),
-        Weight::new::<pound>(50000.0),
+        Mass::new::<pound>(50000.0),
         (
-            Distance::new::<foot>(30.0),   // 30 ft to the right (realistic)
-            Distance::new::<foot>(50.0),
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(30.0),   // 30 ft to the right (realistic)
+            Length::new::<foot>(50.0),
+            Length::new::<foot>(0.0),
         ),
     );
     
     let pad_area = Area::new::<square_foot>(4.0);
     let spread = 10.0;
     
-    analysis.add_support("Front-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Front-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Rear-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
-    analysis.add_support("Rear-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
+    analysis.add_support("Front-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Front-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Rear-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
+    analysis.add_support("Rear-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
     
     match analysis.calculate_reactions() {
         Ok(result) => {
@@ -362,27 +362,27 @@ fn test_side_load_2() {
 
 fn test_rear_load_2() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
+        Mass::new::<pound>(100000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(8.0),
-            Distance::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(8.0),
+            Length::new::<foot>(0.0),
         ),
-        Weight::new::<pound>(50000.0),
+        Mass::new::<pound>(50000.0),
         (
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(40.0),
-            Distance::new::<foot>(-25.0),  // 25 ft behind crane (realistic)
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(40.0),
+            Length::new::<foot>(-25.0),  // 25 ft behind crane (realistic)
         ),
     );
     
     let pad_area = Area::new::<square_foot>(4.0);
     let spread = 10.0;
     
-    analysis.add_support("Front-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Front-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(spread), pad_area);
-    analysis.add_support("Rear-Left", Distance::new::<foot>(-spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
-    analysis.add_support("Rear-Right", Distance::new::<foot>(spread), Distance::new::<foot>(0.0), Distance::new::<foot>(-spread), pad_area);
+    analysis.add_support("Front-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Front-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(spread), pad_area);
+    analysis.add_support("Rear-Left", Length::new::<foot>(-spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
+    analysis.add_support("Rear-Right", Length::new::<foot>(spread), Length::new::<foot>(0.0), Length::new::<foot>(-spread), pad_area);
     
     match analysis.calculate_reactions() {
         Ok(result) => {
@@ -397,18 +397,18 @@ fn test_rear_load_2() {
 
 fn test_soil_validation_2() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
-        (Distance::new::<foot>(0.0), Distance::new::<foot>(8.0), Distance::new::<foot>(0.0)),
-        Weight::new::<pound>(50000.0),
-        (Distance::new::<foot>(30.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)),
+        Mass::new::<pound>(100000.0),
+        (Length::new::<foot>(0.0), Length::new::<foot>(8.0), Length::new::<foot>(0.0)),
+        Mass::new::<pound>(50000.0),
+        (Length::new::<foot>(30.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)),
     );
     
     // Small pads
     let small_pad = Area::new::<square_foot>(4.0);
-    analysis.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), small_pad);
-    analysis.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), small_pad);
-    analysis.add_support("RL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), small_pad);
-    analysis.add_support("RR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), small_pad);
+    analysis.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), small_pad);
+    analysis.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), small_pad);
+    analysis.add_support("RL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), small_pad);
+    analysis.add_support("RR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), small_pad);
     
     println!("With 2x2 pads (4 sq ft):\n");
 
@@ -441,17 +441,17 @@ fn test_soil_validation_2() {
     println!("\n--- With 4x4 mats (16 sq ft) ---\n");
 
     let mut analysis2 = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
-        (Distance::new::<foot>(0.0), Distance::new::<foot>(8.0), Distance::new::<foot>(0.0)),
-        Weight::new::<pound>(50000.0),
-        (Distance::new::<foot>(30.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)),
+        Mass::new::<pound>(100000.0),
+        (Length::new::<foot>(0.0), Length::new::<foot>(8.0), Length::new::<foot>(0.0)),
+        Mass::new::<pound>(50000.0),
+        (Length::new::<foot>(30.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)),
     );
     
     let large_pad = Area::new::<square_foot>(16.0);  // 4x4 ft mats
-    analysis2.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), large_pad);
-    analysis2.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), large_pad);
-    analysis2.add_support("RL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), large_pad);
-    analysis2.add_support("RR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), large_pad);
+    analysis2.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), large_pad);
+    analysis2.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), large_pad);
+    analysis2.add_support("RL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), large_pad);
+    analysis2.add_support("RR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), large_pad);
     
     println!("\nTesting on soft clay (1000 psf / 10 PSI):");
     match analysis2.validate_soil_capacity(soil_capacities::soft_clay()) {
@@ -468,17 +468,17 @@ fn test_soil_validation_2() {
 
 fn test_mat_sizing_2() {
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
-        (Distance::new::<foot>(0.0), Distance::new::<foot>(8.0), Distance::new::<foot>(0.0)),
-        Weight::new::<pound>(50000.0),
-        (Distance::new::<foot>(30.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)),
+        Mass::new::<pound>(100000.0),
+        (Length::new::<foot>(0.0), Length::new::<foot>(8.0), Length::new::<foot>(0.0)),
+        Mass::new::<pound>(50000.0),
+        (Length::new::<foot>(30.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)),
     );
     
     let pad_area = Area::new::<square_foot>(4.0);
-    analysis.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-    analysis.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-    analysis.add_support("RL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
-    analysis.add_support("RR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
+    analysis.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+    analysis.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+    analysis.add_support("RL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
+    analysis.add_support("RR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
     
     println!("Current pad size: 2x2 ft (4 sq ft)");
     
@@ -509,17 +509,17 @@ fn test_tipping_condition() {
     println!("Testing extreme side load that SHOULD fail...\n");
     
     let mut analysis = GroundBearingAnalysis::new(
-        Weight::new::<pound>(100000.0),
-        (Distance::new::<foot>(0.0), Distance::new::<foot>(8.0), Distance::new::<foot>(0.0)),
-        Weight::new::<pound>(50000.0),
-        (Distance::new::<foot>(80.0), Distance::new::<foot>(50.0), Distance::new::<foot>(0.0)), // EXTREME
+        Mass::new::<pound>(100000.0),
+        (Length::new::<foot>(0.0), Length::new::<foot>(8.0), Length::new::<foot>(0.0)),
+        Mass::new::<pound>(50000.0),
+        (Length::new::<foot>(80.0), Length::new::<foot>(50.0), Length::new::<foot>(0.0)), // EXTREME
     );
     
     let pad_area = Area::new::<square_foot>(4.0);
-    analysis.add_support("FL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-    analysis.add_support("FR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(10.0), pad_area);
-    analysis.add_support("RL", Distance::new::<foot>(-10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
-    analysis.add_support("RR", Distance::new::<foot>(10.0), Distance::new::<foot>(0.0), Distance::new::<foot>(-10.0), pad_area);
+    analysis.add_support("FL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+    analysis.add_support("FR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(10.0), pad_area);
+    analysis.add_support("RL", Length::new::<foot>(-10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
+    analysis.add_support("RR", Length::new::<foot>(10.0), Length::new::<foot>(0.0), Length::new::<foot>(-10.0), pad_area);
     
     match analysis.calculate_reactions() {
         Ok(result) => {

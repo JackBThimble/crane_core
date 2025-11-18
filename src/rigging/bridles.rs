@@ -1,12 +1,8 @@
 extern crate uom;
 
-use crate::physics::statics::*;
-use crate::rigging::{LegType, LiveLeg, Sling};
-use crate::types::units::*;
+use crate::rigging::{LiveLeg, Sling};
 use crate::types::*;
 use nalgebra as na;
-use uom::si::f64;
-use uom::si::*;
 
 
 /// A multi-leg bridle configuration
@@ -15,7 +11,7 @@ use uom::si::*;
 #[derive(Debug, Clone)]
 pub struct Bridle {
     /// Load being lifted
-    pub load: Weight,
+    pub load: Mass,
 
     /// Load center of gravity
     pub load_cog: na::Point3<f64>,
@@ -43,7 +39,7 @@ pub struct BridleLeg {
 }
 
 impl Bridle {
-    pub fn new(load: Weight, load_cog: na::Point3<f64>, hook_position: na::Point3<f64>) -> Self {
+    pub fn new(load: Mass, load_cog: na::Point3<f64>, hook_position: na::Point3<f64>) -> Self {
         Self {
             load,
             load_cog,
@@ -140,7 +136,7 @@ impl Bridle {
                 return Err(BridleError::LegOverCapacity {
                     leg_id: leg.sling.id.clone(),
                     tension: DisplayForce(leg.tension),
-                    capacity: DisplayWeight(leg.sling.effective_capacity()),
+                    capacity: DisplayMass(leg.sling.effective_capacity()),
                 });
             }
         }
@@ -202,7 +198,7 @@ impl Bridle {
         if (total_tension - load_lbf).abs() > 10.0 {
             return Err(BridleError::UnbalancedLoad {
                 total_tension: DisplayForce(Force::new::<pound_force>(total_tension)),
-                required_load: DisplayWeight(self.load),
+                required_load: DisplayMass(self.load),
             });
         }
 
@@ -229,7 +225,7 @@ impl Bridle {
         if remaining_load < 0.0 {
             return Err(BridleError::ExcessiveLiveTension {
                 live_tension: DisplayForce(Force::new::<pound_force>(live_tension_total)),
-                total_load: DisplayWeight(self.load),
+                total_load: DisplayMass(self.load),
             });
         }
 
@@ -256,7 +252,7 @@ impl Bridle {
                 return Err(BridleError::LegOverCapacity {
                     leg_id: leg.sling.id.clone(),
                     tension: DisplayForce(leg.tension),
-                    capacity: DisplayWeight(leg.sling.effective_capacity()),
+                    capacity: DisplayMass(leg.sling.effective_capacity()),
                 });
             }
         }
@@ -272,7 +268,7 @@ impl Bridle {
 
 #[derive(Debug)]
 pub struct BridleAnalysis {
-    pub total_load: Weight,
+    pub total_load: Mass,
     pub dead_leg_tensions: Vec<Force>,
     pub live_leg_tensions: Vec<Force>,
     pub is_balanced: bool,
@@ -289,19 +285,19 @@ pub enum BridleError {
     LegOverCapacity {
         leg_id: String,
         tension: DisplayForce,
-        capacity: DisplayWeight
+        capacity: DisplayMass
     },
 
     #[error("Unbalanced load: total tension {total_tension} != required load {required_load}")]
     UnbalancedLoad {
         total_tension: DisplayForce,
-        required_load: DisplayWeight
+        required_load: DisplayMass
     },
 
     #[error("Live legs provide excessive tension: {live_tension} > total load {total_load}")]
     ExcessiveLiveTension {
         live_tension: DisplayForce,
-        total_load: DisplayWeight,
+        total_load: DisplayMass,
     },
 
     #[error("Unsupported configuration: {0}")]
@@ -317,7 +313,7 @@ mod tests {
     #[test]
     fn test_symmetric_4_leg_bridle() {
         let mut bridle = Bridle::new(
-            Weight::new::<pound>(10000.0),
+            Mass::new::<pound>(10000.0),
             na::Point3::origin(),
             na::Point3::new(0.0, 20.0, 0.0), // Hook 20 ft above load
         );
@@ -334,11 +330,11 @@ mod tests {
             let sling = Sling::new(
                 "Test",
                 SlingMaterial::WireRope {
-                    diameter: Distance::new::<inch>(0.5),
+                    diameter: Length::new::<inch>(0.5),
                     construction: WireRopeConstruction::SixByNineteen,
                 },
-                Weight::new::<pound>(5000.0),
-                Distance::new::<foot>(25.0),
+                Mass::new::<pound>(5000.0),
+                Length::new::<foot>(25.0),
             );
 
             bridle.add_dead_leg(sling, corner);

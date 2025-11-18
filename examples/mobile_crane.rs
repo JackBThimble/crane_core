@@ -1,15 +1,13 @@
 use crane_core::equipment::{Crane, MobileCrane};
-use crane_core::capacity::LoadChartPackage;
 use crane_core::types::*;
-use crane_core::types::units::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create mobile crane
     let mut crane = MobileCrane::new(
         "Grove",
         "GMK5250L",
-        Distance::new::<foot>(154.2),
-        Distance::new::<foot>(10.0),
+        Length::new::<foot>(154.2),
+        Length::new::<foot>(10.0),
     );
     
     // Load charts from file
@@ -29,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Rated capacity at current config: {} lbs", capacity.get::<pound>());
     
     // Validate a lift
-    let load = Weight::new::<pound>(50000.0);
+    let load = Mass::new::<pound>(50000.0);
     match crane.validate_lift(load) {
         Ok(_) => println!("Lift is safe!"),
         Err(e) => println!("Lift failed: {}", e),

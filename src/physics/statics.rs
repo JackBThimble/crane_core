@@ -1,6 +1,5 @@
 use nalgebra as na;
 use crate::types::*;
-use crate::types::units::*;
 
 /// A force vector in 3D space with magnitude and direction
 #[derive(Debug, Clone, Copy)]
@@ -19,8 +18,8 @@ impl ForceVector {
     }
     
     /// Gravity force for a mass at a point
-    pub fn from_weight(weight: Weight, point: na::Point3<f64>) -> Self {
-        let force_lbf = weight.get::<pound>(); // Weight in lbf = mass in lb on Earth
+    pub fn from_weight(weight: Mass, point: na::Point3<f64>) -> Self {
+        let force_lbf = weight.get::<pound>(); // Mass in lbf = mass in lb on Earth
         Self {
             point,
             force: na::Vector3::new(0.0, -force_lbf, 0.0), // Down is -Y
@@ -88,7 +87,7 @@ pub fn is_in_equilibrium(
 }
 
 /// Calculate center of gravity for multiple point masses
-pub fn center_of_gravity(masses: &[(Weight, na::Point3<f64>)]) -> na::Point3<f64> {
+pub fn center_of_gravity(masses: &[(Mass, na::Point3<f64>)]) -> na::Point3<f64> {
     let total_weight: f64 = masses.iter()
         .map(|(w, _)| w.get::<pound>())
         .sum();
@@ -113,7 +112,7 @@ mod tests {
     fn test_moment_calculation() {
         // 1000 lb load at 50 ft radius should produce 50,000 ft-lb moment
         let force = ForceVector::from_weight(
-            Weight::new::<pound>(1000.0),
+            Mass::new::<pound>(1000.0),
             na::Point3::new(50.0, 0.0, 0.0), // 50 ft to the side
         );
         
@@ -127,8 +126,8 @@ mod tests {
     #[test]
     fn test_center_of_gravity() {
         let masses = vec![
-            (Weight::new::<pound>(1000.0), na::Point3::new(0.0, 0.0, 0.0)),
-            (Weight::new::<pound>(1000.0), na::Point3::new(10.0, 0.0, 0.0)),
+            (Mass::new::<pound>(1000.0), na::Point3::new(0.0, 0.0, 0.0)),
+            (Mass::new::<pound>(1000.0), na::Point3::new(10.0, 0.0, 0.0)),
         ];
         
         let cog = center_of_gravity(&masses);
@@ -144,11 +143,11 @@ mod tests {
         // Balanced see-saw: equal weights at equal distances
         let forces = vec![
             ForceVector::from_weight(
-                Weight::new::<pound>(1000.0),
+                Mass::new::<pound>(1000.0),
                 na::Point3::new(-10.0, 0.0, 0.0),
             ),
             ForceVector::from_weight(
-                Weight::new::<pound>(1000.0),
+                Mass::new::<pound>(1000.0),
                 na::Point3::new(10.0, 0.0, 0.0),
             ),
             // Reaction force at pivot

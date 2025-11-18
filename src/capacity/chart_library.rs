@@ -253,7 +253,7 @@ fn validate_chart(chart: &LoadChart) -> Result<(), Vec<String>> {
             if let Err(e) = radius.to_distance() {
                 errors.push(format!("Boom {} point {}: invalid radius unit - {}", boom_idx, point_idx, e));
             }
-            if let Err(e) = capacity.to_weight() {
+            if let Err(e) = capacity.to_mass() {
                 errors.push(format!("Boom {} point {}: invalid capacity unit - {}", boom_idx, point_idx, e));
             }
         }
@@ -266,7 +266,7 @@ fn validate_chart(chart: &LoadChart) -> Result<(), Vec<String>> {
 
     // Check counterweight if present
     if let Some(ref cw) = chart.configuration.counterweight {
-        if let Err(e) = cw.weight_mass() {
+        if let Err(e) = cw.to_uom_mass() {
             errors.push(format!("Counterweight configuration: {}", e));
         }
     }
@@ -310,8 +310,8 @@ mod tests {
         ];
         capacity_data.data = vec![
             vec![
-            (LengthValue::new(20.0, "ft"), WeightValue::new(242500.0, "lbs")),
-            (LengthValue::new(40.0, "ft"), WeightValue::new(152000.0, "lbs")),
+            (LengthValue::new(20.0, "ft"), MassValue::new(242500.0, "lbs")),
+            (LengthValue::new(40.0, "ft"), MassValue::new(152000.0, "lbs")),
             ],
         ];
 
@@ -329,7 +329,7 @@ mod tests {
                     jib: None,
                 },
                 counterweight: Some(CounterweightConfiguration {
-                    weight: WeightValue::new(110200.0, "lbs"),
+                    weight: MassValue::new(110200.0, "lbs"),
                     configuration: "Standard".into(),
                 }),
                 additional: std::collections::HashMap::new(),

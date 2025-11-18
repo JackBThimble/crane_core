@@ -1,6 +1,5 @@
 use nalgebra as na;
 use crate::types::*;
-use crate::types::units::*;
 
 /// Create a rotation matrix around Y axis (vertical, for boom angle)
 pub fn rotation_y(angle: Angle) -> na::Matrix3<f64> {

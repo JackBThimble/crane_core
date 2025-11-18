@@ -4,7 +4,7 @@ use crate::equipment::CraneType;
 #[derive(Debug, Clone)]
 pub struct WindAnalysis {
     pub crane_type: CraneType,
-    pub boom_length: Distance,
+    pub boom_length: Length,
     pub boom_angle: Angle,
     pub load_area: Area,
     pub wind_speed: Velocity,
@@ -13,13 +13,13 @@ pub struct WindAnalysis {
 #[derive(Debug, thiserror::Error)]
 pub enum WindError {
     #[error("Wind speed {actual} exceeds operating limit {limit}")]
-    ExceedsOperatingLimit {actual: DisplaySpeed, limit: DisplaySpeed},
+    ExceedsOperatingLimit {actual: DisplayVelocity, limit: DisplayVelocity},
 
     #[error("Wind speed {actual} exceeds shutdown limit {limit} - cease operations immediately")]
-    ShutdownRequired {actual: DisplaySpeed, limit: DisplaySpeed},
+    ShutdownRequired {actual: DisplayVelocity, limit: DisplayVelocity},
 
     #[error("Wind speed {actual} exceeds out-of-service limit - crane damage risk")]
-    OutOfServiceExceeded {actual: DisplaySpeed, limit: DisplaySpeed},
+    OutOfServiceExceeded {actual: DisplayVelocity, limit: DisplayVelocity},
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -33,7 +33,7 @@ pub enum WindCondition {
 impl WindAnalysis {
     pub fn new(
         crane_type: CraneType,
-        boom_length: Distance,
+        boom_length: Length,
         boom_angle: Angle,
         load_area: Area,
         wind_speed: Velocity,
@@ -78,9 +78,9 @@ impl WindAnalysis {
     }
     
     /// Get derated capacity
-    pub fn derated_capacity(&self, rated_capacity: Weight) -> Weight {
+    pub fn derated_capacity(&self, rated_capacity: Mass) -> Mass {
         let factor = self.derating_factor();
-        Weight::new::<pound>(rated_capacity.get::<pound>() * factor)
+        Mass::new::<pound>(rated_capacity.get::<pound>() * factor)
     }
     
     /// Operating wind speed limits for this crane
@@ -196,15 +196,15 @@ impl WindAnalysis {
             WindCondition::Shutdown => {
                 let (_, shutdown) = self.operating_limits();
                 Err(WindError::ShutdownRequired {
-                    actual: DisplaySpeed(self.wind_speed),
-                    limit: DisplaySpeed(shutdown),
+                    actual: DisplayVelocity(self.wind_speed),
+                    limit: DisplayVelocity(shutdown),
                 })
             }
             WindCondition::OutOfService => {
                 let limit = self.out_of_service_limit();
                 Err(WindError::OutOfServiceExceeded {
-                    actual: DisplaySpeed(self.wind_speed),
-                    limit: DisplaySpeed(limit),
+                    actual: DisplayVelocity(self.wind_speed),
+                    limit: DisplayVelocity(limit),
                 })
             }
         }
@@ -355,7 +355,7 @@ mod tests {
     fn test_calm_winds() {
         let analysis = WindAnalysis::new(
             CraneType::AllTerrain,
-            Distance::new::<foot>(150.0),
+            Length::new::<foot>(150.0),
             Angle::new::<degree>(45.0),
             Area::new::<square_foot>(50.0),
             Velocity::new::<mile_per_hour>(5.0),
@@ -372,7 +372,7 @@ mod tests {
     fn test_caution_winds() {
         let analysis = WindAnalysis::new(
             CraneType::AllTerrain,
-            Distance::new::<foot>(150.0),
+            Length::new::<foot>(150.0),
             Angle::new::<degree>(45.0),
             Area::new::<square_foot>(50.0),
             Velocity::new::<mile_per_hour>(25.0),
@@ -389,7 +389,7 @@ mod tests {
     fn test_shutdown_winds() {
         let analysis = WindAnalysis::new(
             CraneType::AllTerrain,
-            Distance::new::<foot>(150.0),
+            Length::new::<foot>(150.0),
             Angle::new::<degree>(45.0),
             Area::new::<square_foot>(50.0),
             Velocity::new::<mile_per_hour>(35.0),
@@ -406,7 +406,7 @@ mod tests {
     fn test_wind_forces() {
         let analysis = WindAnalysis::new(
             CraneType::AllTerrain,
-            Distance::new::<foot>(150.0),
+            Length::new::<foot>(150.0),
             Angle::new::<degree>(45.0),
             Area::new::<square_foot>(50.0),
             Velocity::new::<mile_per_hour>(30.0),
@@ -427,13 +427,13 @@ mod tests {
     fn test_derated_capacity() {
         let analysis = WindAnalysis::new(
             CraneType::AllTerrain,
-            Distance::new::<foot>(150.0),
+            Length::new::<foot>(150.0),
             Angle::new::<degree>(45.0),
             Area::new::<square_foot>(50.0),
             Velocity::new::<mile_per_hour>(25.0),
         );
         
-        let rated = Weight::new::<pound>(50000.0);
+        let rated = Mass::new::<pound>(50000.0);
         let derated = analysis.derated_capacity(rated);
         
         // Should be less than rated

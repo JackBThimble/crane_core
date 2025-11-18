@@ -1,26 +1,24 @@
 use crate::types::*;
-use crate::types::units::*;
-use nalgebra as na;
 
 /// Types of sling materials
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SlingMaterial {
     /// Wire rope sling (most common for heavy lifts)
     WireRope {
-        diameter: Distance,
+        diameter: Length,
         construction: WireRopeConstruction,
     },
     
     /// Synthetic web sling (nylon, polyester)
     Synthetic {
-        width: Distance,
+        width: Length,
         plies: u32,
     },
     
     /// Chain sling (alloy steel)
     Chain {
         grade: ChainGrade,
-        size: Distance,
+        size: Length,
     },
 }
 
@@ -80,10 +78,10 @@ pub struct Sling {
     pub material: SlingMaterial,
     
     /// Rated capacity (vertical hitch)
-    pub rated_capacity: Weight,
+    pub rated_capacity: Mass,
     
     /// Length of sling
-    pub length: Distance,
+    pub length: Length,
     
     /// Current hitch configuration
     pub hitch: HitchType,
@@ -103,7 +101,7 @@ pub enum LegType {
         current_tension: Force,
         
         /// Maximum capacity of the live rigging device
-        device_capacity: Weight,
+        device_capacity: Mass,
     },
 }
 
@@ -111,8 +109,8 @@ impl Sling {
     pub fn new(
         id: impl Into<String>,
         material: SlingMaterial,
-        rated_capacity: Weight,
-        length: Distance,
+        rated_capacity: Mass,
+        length: Length,
     ) -> Self {
         Self {
             id: id.into(),
@@ -127,7 +125,7 @@ impl Sling {
     /// Calculate effective capacity based on hitch type and angle
     /// 
     /// This is CRITICAL - sling angle dramatically affects capacity
-    pub fn effective_capacity(&self) -> Weight {
+    pub fn effective_capacity(&self) -> Mass {
         let base_capacity = self.rated_capacity.get::<pound>();
         
         let capacity_lbs = match self.hitch {
@@ -161,14 +159,14 @@ impl Sling {
             }
         };
         
-        Weight::new::<pound>(capacity_lbs)
+        Mass::new::<pound>(capacity_lbs)
     }
     
     /// Calculate tension in this sling for a given load
     /// 
     /// For dead legs, tension is determined purely by geometry
     /// For live legs, tension is set by the device
-    pub fn calculate_tension(&self, load_share: Weight) -> Force {
+    pub fn calculate_tension(&self, load_share: Mass) -> Force {
         match self.leg_type {
             LegType::Dead => {
                 // For dead legs, calculate tension from geometry
@@ -208,7 +206,7 @@ impl Sling {
     /// Check if this sling is safe for the given tension
     pub fn is_safe(&self, tension: Force) -> bool {
         let capacity = self.effective_capacity();
-        let tension_as_weight = Weight::new::<pound>(tension.get::<pound_force>());
+        let tension_as_weight = Mass::new::<pound>(tension.get::<pound_force>());
         
         tension_as_weight <= capacity
     }
@@ -218,8 +216,8 @@ impl Sling {
     /// angle = arccos(height / sling_length)
     pub fn calculate_sling_angle(
         &self,
-        hook_height: Distance,
-        load_attachment_height: Distance,
+        hook_height: Length,
+        load_attachment_height: Length,
     ) -> Angle {
         let vertical_distance = (hook_height.get::<foot>() - load_attachment_height.get::<foot>()).abs();
         let sling_len = self.length.get::<foot>();
@@ -256,18 +254,17 @@ pub fn asme_angle_factor(angle_from_vertical: Angle) -> f64 {
 mod tests {
     use super::*;
     use approx::assert_relative_eq;
-        use uom::si::f32::Length;
     
     #[test]
     fn test_vertical_hitch_capacity() {
         let sling = Sling::new(
             "Test-1",
             SlingMaterial::WireRope {
-                diameter: Distance::new::<inch>(0.5),
+                diameter: Length::new::<inch>(0.5),
                 construction: WireRopeConstruction::SixByNineteen,
             },
-            Weight::new::<pound>(5000.0),
-            Distance::new::<foot>(10.0),
+            Mass::new::<pound>(5000.0),
+            Length::new::<foot>(10.0),
         );
         
         let capacity = sling.effective_capacity();
@@ -279,11 +276,11 @@ mod tests {
         let mut sling = Sling::new(
             "Test-2",
             SlingMaterial::WireRope {
-                diameter: Distance::new::<inch>(0.5),
+                diameter: Length::new::<inch>(0.5),
                 construction: WireRopeConstruction::SixByNineteen,
             },
-            Weight::new::<pound>(5000.0),
-            Distance::new::<foot>(10.0),
+            Mass::new::<pound>(5000.0),
+            Length::new::<foot>(10.0),
         );
         
         sling.hitch = HitchType::Choker;
@@ -298,11 +295,11 @@ mod tests {
         let mut sling = Sling::new(
             "Test-3",
             SlingMaterial::WireRope {
-                diameter: Distance::new::<inch>(0.5),
+                diameter: Length::new::<inch>(0.5),
                 construction: WireRopeConstruction::SixByNineteen,
             },
-            Weight::new::<pound>(5000.0),
-            Distance::new::<foot>(10.0),
+            Mass::new::<pound>(5000.0),
+            Length::new::<foot>(10.0),
         );
         
         // Basket hitch at 0 degrees (vertical legs)
@@ -320,11 +317,11 @@ mod tests {
         let mut sling = Sling::new(
             "Test-4",
             SlingMaterial::WireRope {
-                diameter: Distance::new::<inch>(0.5),
+                diameter: Length::new::<inch>(0.5),
                 construction: WireRopeConstruction::SixByNineteen,
             },
-            Weight::new::<pound>(5000.0),
-            Distance::new::<foot>(10.0),
+            Mass::new::<pound>(5000.0),
+            Length::new::<foot>(10.0),
         );
         
         // Basket hitch at 30 degrees from vertical
@@ -342,11 +339,11 @@ mod tests {
         let mut sling = Sling::new(
             "Test-5",
             SlingMaterial::WireRope {
-                diameter: Distance::new::<inch>(0.5),
+                diameter: Length::new::<inch>(0.5),
                 construction: WireRopeConstruction::SixByNineteen,
             },
-            Weight::new::<pound>(5000.0),
-            Distance::new::<foot>(10.0),
+            Mass::new::<pound>(5000.0),
+            Length::new::<foot>(10.0),
         );
         
         // 4-leg bridle at 30 degrees
@@ -356,7 +353,7 @@ mod tests {
         };
         
         // 10,000 lb load shared by 4 legs
-        let load_share = Weight::new::<pound>(10000.0 / 4.0);
+        let load_share = Mass::new::<pound>(10000.0 / 4.0);
         let tension = sling.calculate_tension(load_share);
         
         // Tension = 2500 / (cos(30°)) = 2500 / 0.866 = 2887 lbf
@@ -372,13 +369,13 @@ mod tests {
         let mut sling = Sling::new(
             "Test-6",
             SlingMaterial::Synthetic { 
-                width: Distance::new::<inch>(2.0), 
+                width: Length::new::<inch>(2.0), 
                 plies: 2 },
-            Weight::new::<pound>(3000.0),
-            Distance::new::<foot>(8.0),
+            Mass::new::<pound>(3000.0),
+            Length::new::<foot>(8.0),
         );
         sling.hitch = HitchType::Basket { sling_angle: Angle::new::<degree>(0.0) };
-        let load_share = Weight::new::<pound>(4000.0);
+        let load_share = Mass::new::<pound>(4000.0);
         let tension = sling.calculate_tension(load_share);
         assert_relative_eq!(tension.get::<pound_force>(), 2000.0, epsilon = 1.0);
     }
@@ -388,13 +385,13 @@ mod tests {
         let mut sling = Sling::new(
             "Test-6",
             SlingMaterial::Synthetic { 
-                width: Distance::new::<inch>(2.0), 
+                width: Length::new::<inch>(2.0), 
                 plies: 2 },
-            Weight::new::<pound>(3000.0),
-            Distance::new::<foot>(8.0),
+            Mass::new::<pound>(3000.0),
+            Length::new::<foot>(8.0),
         );
         sling.hitch = HitchType::Basket { sling_angle: Angle::new::<degree>(30.0) };
-        let load_share = Weight::new::<pound>(4000.0);
+        let load_share = Mass::new::<pound>(4000.0);
         let tension = sling.calculate_tension(load_share);
         assert_relative_eq!(tension.get::<pound_force>(), 2309.0, epsilon = 1.0);
     }
@@ -404,13 +401,13 @@ mod tests {
         let mut sling = Sling::new(
             "Test-7",
             SlingMaterial::Synthetic { 
-                width: Distance::new::<inch>(2.0), 
+                width: Length::new::<inch>(2.0), 
                 plies: 2 },
-            Weight::new::<pound>(3000.0),
-            Distance::new::<foot>(8.0),
+            Mass::new::<pound>(3000.0),
+            Length::new::<foot>(8.0),
         );
         sling.hitch = HitchType::Basket { sling_angle: Angle::new::<degree>(60.0) };
-        let load_share = Weight::new::<pound>(4000.0);
+        let load_share = Mass::new::<pound>(4000.0);
         let tension = sling.calculate_tension(load_share);
         assert_relative_eq!(tension.get::<pound_force>(), 4000.0, epsilon = 1.0);
     }

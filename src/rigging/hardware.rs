@@ -1,24 +1,23 @@
 use crate::types::*;
-use crate::types::units::*;
 
 /// Types of shackles
 #[derive(Debug, Clone, PartialEq)]
 pub enum ShackleType {
     /// Anchor shackle (D-shackle) - wider body, better for multiple connections
     Anchor {
-        size: Distance,
+        size: Length,
         pin_type: ShacklePinType,
     },
     
     /// Bow shackle (round shackle) - longer reach, better for angled loads
     Bow {
-        size: Distance,
+        size: Length,
         pin_type: ShacklePinType,
     },
     
     /// Chain shackle - designed for permanent chain connections
     Chain {
-        size: Distance,
+        size: Length,
     },
 }
 
@@ -39,7 +38,7 @@ pub enum ShacklePinType {
 pub struct Hardware {
     pub id: String,
     pub hardware_type: HardwareType,
-    pub rated_capacity: Weight,
+    pub rated_capacity: Mass,
     pub material: HardwareMaterial,
     pub manufacturer: String,
 }
@@ -58,29 +57,29 @@ pub enum HardwareType {
 pub enum HookType {
     /// Eye hook - simple hook with eye for attachment
     Eye {
-        throat_opening: Distance,
+        throat_opening: Length,
         has_latch: bool,
     },
     
     /// Grab hook - for chain, has narrower throat
     Grab {
-        throat_opening: Distance,
+        throat_opening: Length,
     },
     
     /// Sorting hook - wide opening for material handling
     Sorting {
-        throat_opening: Distance,
+        throat_opening: Length,
     },
     
     /// Swivel hook - rotates to prevent twisting
     Swivel {
-        throat_opening: Distance,
+        throat_opening: Length,
         has_latch: bool,
     },
     
     /// Foundry hook - heavy duty, typically no latch
     Foundry {
-        throat_opening: Distance,
+        throat_opening: Length,
     },
 }
 
@@ -117,17 +116,17 @@ pub enum TurnbuckleType {
 pub enum EyeBoltType {
     /// Regular eye bolt - VERTICAL LOAD ONLY
     Regular {
-        thread_diameter: Distance,
+        thread_diameter: Length,
     },
     
     /// Shoulder eye bolt - can handle angular loads
     Shoulder {
-        thread_diameter: Distance,
+        thread_diameter: Length,
     },
     
     /// Swivel eye bolt - rotates
     Swivel {
-        thread_diameter: Distance,
+        thread_diameter: Length,
     },
 }
 
@@ -184,7 +183,7 @@ impl Hardware {
     pub fn new(
         id: impl Into<String>,
         hardware_type: HardwareType,
-        rated_capacity: Weight,
+        rated_capacity: Mass,
         material: HardwareMaterial,
     ) -> Self {
         Self {
@@ -200,7 +199,7 @@ impl Hardware {
     /// 
     /// CRITICAL: Side loading, angular loading, and improper use can
     /// dramatically reduce hardware capacity
-    pub fn effective_capacity(&self, loading: LoadingCondition) -> Weight {
+    pub fn effective_capacity(&self, loading: LoadingCondition) -> Mass {
         let base_capacity = self.rated_capacity.get::<pound>();
         
         let capacity_factor = match (&self.hardware_type, loading) {
@@ -243,7 +242,7 @@ impl Hardware {
             _ => 0.5,
         };
         
-        Weight::new::<pound>(base_capacity * capacity_factor)
+        Mass::new::<pound>(base_capacity * capacity_factor)
     }
     
     /// Shackle side load reduction factor
@@ -277,7 +276,7 @@ impl Hardware {
     }
     
     /// Check if this hardware is safe for the given load and conditions
-    pub fn is_safe(&self, load: Weight, loading: LoadingCondition) -> bool {
+    pub fn is_safe(&self, load: Mass, loading: LoadingCondition) -> bool {
         load <= self.effective_capacity(loading)
     }
 }
@@ -311,10 +310,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-1/4".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(0.25),
+                size: Length::new::<inch>(0.25),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(1000.0),
+            rated_capacity: Mass::new::<pound>(1000.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -325,10 +324,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-3/8".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(0.375),
+                size: Length::new::<inch>(0.375),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(2000.0),
+            rated_capacity: Mass::new::<pound>(2000.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -339,10 +338,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-1/2".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(0.5),
+                size: Length::new::<inch>(0.5),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(3250.0),
+            rated_capacity: Mass::new::<pound>(3250.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -353,10 +352,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-5/8".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(0.625),
+                size: Length::new::<inch>(0.625),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(4750.0),
+            rated_capacity: Mass::new::<pound>(4750.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -367,10 +366,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-3/4".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(0.75),
+                size: Length::new::<inch>(0.75),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(6500.0),
+            rated_capacity: Mass::new::<pound>(6500.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -381,10 +380,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-7/8".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(0.875),
+                size: Length::new::<inch>(0.875),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(8500.0),
+            rated_capacity: Mass::new::<pound>(8500.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -395,10 +394,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-1".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(1.0),
+                size: Length::new::<inch>(1.0),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(9500.0),
+            rated_capacity: Mass::new::<pound>(9500.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -409,10 +408,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-1-1/8".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(1.125),
+                size: Length::new::<inch>(1.125),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(12000.0),
+            rated_capacity: Mass::new::<pound>(12000.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -423,10 +422,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-1-1/4".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(1.25),
+                size: Length::new::<inch>(1.25),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(13500.0),
+            rated_capacity: Mass::new::<pound>(13500.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -437,10 +436,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-1-1/2".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(1.5),
+                size: Length::new::<inch>(1.5),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(17000.0),
+            rated_capacity: Mass::new::<pound>(17000.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -451,10 +450,10 @@ pub mod crosby_shackles {
         Hardware {
             id: "G-209-2".into(),
             hardware_type: HardwareType::Shackle(ShackleType::Anchor {
-                size: Distance::new::<inch>(2.0),
+                size: Length::new::<inch>(2.0),
                 pin_type: ShacklePinType::ScrewPin,
             }),
-            rated_capacity: Weight::new::<pound>(25000.0),
+            rated_capacity: Mass::new::<pound>(25000.0),
             material: HardwareMaterial::AlloySteel { grade: SteelGrade::Grade80 },
             manufacturer: "Crosby".into(),
         }
@@ -466,7 +465,7 @@ pub mod master_links {
     use super::*;
     
     /// Crosby S-5287 forged master link - 4 attachment points
-    pub fn crosby_s5287(size: Distance, capacity: Weight) -> Hardware {
+    pub fn crosby_s5287(size: Length, capacity: Mass) -> Hardware {
         Hardware {
             id: format!("S-5287-{}", size.get::<inch>()),
             hardware_type: HardwareType::MasterLink(MasterLinkType::Forged {
@@ -480,19 +479,19 @@ pub mod master_links {
     
     /// Common master link sizes
     pub fn half_ton() -> Hardware {
-        crosby_s5287(Distance::new::<inch>(0.375), Weight::new::<pound>(1000.0))
+        crosby_s5287(Length::new::<inch>(0.375), Mass::new::<pound>(1000.0))
     }
     
     pub fn one_ton() -> Hardware {
-        crosby_s5287(Distance::new::<inch>(0.5), Weight::new::<pound>(2000.0))
+        crosby_s5287(Length::new::<inch>(0.5), Mass::new::<pound>(2000.0))
     }
     
     pub fn two_ton() -> Hardware {
-        crosby_s5287(Distance::new::<inch>(0.75), Weight::new::<pound>(4000.0))
+        crosby_s5287(Length::new::<inch>(0.75), Mass::new::<pound>(4000.0))
     }
     
     pub fn three_ton() -> Hardware {
-        crosby_s5287(Distance::new::<inch>(1.0), Weight::new::<pound>(6000.0))
+        crosby_s5287(Length::new::<inch>(1.0), Mass::new::<pound>(6000.0))
     }
 }
 
@@ -501,9 +500,9 @@ pub mod hooks {
     use super::*;
     
     /// Crosby G-319 eye hook with latch
-    pub fn crosby_g319(throat: Distance, capacity: Weight) -> Hardware {
+    pub fn crosby_g319(throat: Length, capacity: Mass) -> Hardware {
         Hardware {
-            id: format!("G-319-{}", capacity.get::<ton>()),
+            id: format!("G-319-{}", capacity.get::<ton_short>()),
             hardware_type: HardwareType::Hook(HookType::Eye {
                 throat_opening: throat,
                 has_latch: true,
@@ -516,23 +515,23 @@ pub mod hooks {
     
     /// Common hook sizes
     pub fn quarter_ton() -> Hardware {
-        crosby_g319(Distance::new::<inch>(0.625), Weight::new::<pound>(500.0))
+        crosby_g319(Length::new::<inch>(0.625), Mass::new::<pound>(500.0))
     }
     
     pub fn half_ton() -> Hardware {
-        crosby_g319(Distance::new::<inch>(0.875), Weight::new::<pound>(1000.0))
+        crosby_g319(Length::new::<inch>(0.875), Mass::new::<pound>(1000.0))
     }
     
     pub fn one_ton() -> Hardware {
-        crosby_g319(Distance::new::<inch>(1.0), Weight::new::<pound>(2000.0))
+        crosby_g319(Length::new::<inch>(1.0), Mass::new::<pound>(2000.0))
     }
     
     pub fn two_ton() -> Hardware {
-        crosby_g319(Distance::new::<inch>(1.5), Weight::new::<pound>(4000.0))
+        crosby_g319(Length::new::<inch>(1.5), Mass::new::<pound>(4000.0))
     }
     
     pub fn three_ton() -> Hardware {
-        crosby_g319(Distance::new::<inch>(1.75), Weight::new::<pound>(6000.0))
+        crosby_g319(Length::new::<inch>(1.75), Mass::new::<pound>(6000.0))
     }
 }
 
@@ -541,7 +540,7 @@ pub mod eye_bolts {
     use super::*;
     
     /// Regular eye bolt - VERTICAL LOAD ONLY
-    pub fn regular_eye_bolt(thread_size: Distance, capacity: Weight) -> Hardware {
+    pub fn regular_eye_bolt(thread_size: Length, capacity: Mass) -> Hardware {
         Hardware {
             id: format!("EYE-REG-{}", thread_size.get::<inch>()),
             hardware_type: HardwareType::EyeBolt(EyeBoltType::Regular {
@@ -554,7 +553,7 @@ pub mod eye_bolts {
     }
     
     /// Shoulder eye bolt - can handle angular loads
-    pub fn shoulder_eye_bolt(thread_size: Distance, capacity: Weight) -> Hardware {
+    pub fn shoulder_eye_bolt(thread_size: Length, capacity: Mass) -> Hardware {
         Hardware {
             id: format!("EYE-SHOULDER-{}", thread_size.get::<inch>()),
             hardware_type: HardwareType::EyeBolt(EyeBoltType::Shoulder {
@@ -568,40 +567,40 @@ pub mod eye_bolts {
     
     /// Common regular eye bolt sizes
     pub fn quarter_inch_regular() -> Hardware {
-        regular_eye_bolt(Distance::new::<inch>(0.25), Weight::new::<pound>(350.0))
+        regular_eye_bolt(Length::new::<inch>(0.25), Mass::new::<pound>(350.0))
     }
     
     pub fn three_eighths_regular() -> Hardware {
-        regular_eye_bolt(Distance::new::<inch>(0.375), Weight::new::<pound>(800.0))
+        regular_eye_bolt(Length::new::<inch>(0.375), Mass::new::<pound>(800.0))
     }
     
     pub fn half_inch_regular() -> Hardware {
-        regular_eye_bolt(Distance::new::<inch>(0.5), Weight::new::<pound>(1200.0))
+        regular_eye_bolt(Length::new::<inch>(0.5), Mass::new::<pound>(1200.0))
     }
     
     pub fn five_eighths_regular() -> Hardware {
-        regular_eye_bolt(Distance::new::<inch>(0.625), Weight::new::<pound>(2000.0))
+        regular_eye_bolt(Length::new::<inch>(0.625), Mass::new::<pound>(2000.0))
     }
     
     pub fn three_quarter_regular() -> Hardware {
-        regular_eye_bolt(Distance::new::<inch>(0.75), Weight::new::<pound>(3000.0))
+        regular_eye_bolt(Length::new::<inch>(0.75), Mass::new::<pound>(3000.0))
     }
     
     /// Common shoulder eye bolt sizes
     pub fn half_inch_shoulder() -> Hardware {
-        shoulder_eye_bolt(Distance::new::<inch>(0.5), Weight::new::<pound>(1800.0))
+        shoulder_eye_bolt(Length::new::<inch>(0.5), Mass::new::<pound>(1800.0))
     }
     
     pub fn five_eighths_shoulder() -> Hardware {
-        shoulder_eye_bolt(Distance::new::<inch>(0.625), Weight::new::<pound>(3000.0))
+        shoulder_eye_bolt(Length::new::<inch>(0.625), Mass::new::<pound>(3000.0))
     }
     
     pub fn three_quarter_shoulder() -> Hardware {
-        shoulder_eye_bolt(Distance::new::<inch>(0.75), Weight::new::<pound>(4500.0))
+        shoulder_eye_bolt(Length::new::<inch>(0.75), Mass::new::<pound>(4500.0))
     }
     
     pub fn one_inch_shoulder() -> Hardware {
-        shoulder_eye_bolt(Distance::new::<inch>(1.0), Weight::new::<pound>(7200.0))
+        shoulder_eye_bolt(Length::new::<inch>(1.0), Mass::new::<pound>(7200.0))
     }
 }
 
@@ -672,19 +671,19 @@ mod tests {
         
         // Safe load in-line
         assert!(shackle.is_safe(
-            Weight::new::<pound>(5000.0),
+            Mass::new::<pound>(5000.0),
             LoadingCondition::InLine
         ));
         
         // Overload
         assert!(!shackle.is_safe(
-            Weight::new::<pound>(10000.0),
+            Mass::new::<pound>(10000.0),
             LoadingCondition::InLine
         ));
         
         // Safe with side load reduction
         assert!(shackle.is_safe(
-            Weight::new::<pound>(3000.0),
+            Mass::new::<pound>(3000.0),
             LoadingCondition::SideLoad {
                 angle: Angle::new::<degree>(45.0),
             }

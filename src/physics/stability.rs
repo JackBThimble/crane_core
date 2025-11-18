@@ -1,6 +1,5 @@
 use nalgebra as na;
 use crate::types::*;
-use crate::types::units::*;
 use crate::physics::statics::*;
 
 /// Stability analysis for a crane configuration
@@ -49,9 +48,9 @@ impl TippingEdge {
 /// This is the critical calculation that determines if your crane eats shit.
 pub fn calculate_stability(
     crane_cog: na::Point3<f64>,
-    crane_weight: Weight,
+    crane_weight: Mass,
     load_position: na::Point3<f64>,
-    load_weight: Weight,
+    load_weight: Mass,
     tipping_edge: na::Point3<f64>,
     tipping_axis: na::Unit<na::Vector3<f64>>,
 ) -> StabilityAnalysis {
@@ -94,7 +93,7 @@ pub struct OutriggerConfig {
 
 impl OutriggerConfig {
     /// Standard 4-point outrigger setup (square pattern)
-    pub fn square(spread: Distance, max_load_per_pad: Force) -> Self {
+    pub fn square(spread: Length, max_load_per_pad: Force) -> Self {
         let half_spread = spread.get::<foot>() / 2.0;
         
         Self {
@@ -116,7 +115,7 @@ impl OutriggerConfig {
 pub fn calculate_outrigger_reactions(
     config: &OutriggerConfig,
     system_cog: na::Point3<f64>,
-    total_weight: Weight,
+    total_weight: Mass,
 ) -> Vec<Force> {
     let num_outriggers = config.positions.len();
     
@@ -137,7 +136,7 @@ pub fn calculate_outrigger_reactions(
 fn solve_four_point_reactions(
     config: &OutriggerConfig,
     cog: na::Point3<f64>,
-    weight: Weight,
+    weight: Mass,
 ) -> Vec<Force> {
     let w = weight.get::<pound>();
     let positions = &config.positions;
@@ -176,11 +175,11 @@ mod tests {
     fn test_stability_calculation() {
         // Crane with COG at origin, 100k lbs
         let crane_cog = na::Point3::origin();
-        let crane_weight = Weight::new::<pound>(100000.0);
+        let crane_weight = Mass::new::<pound>(100000.0);
         
         // Load at 50 ft radius, 10k lbs
         let load_pos = na::Point3::new(50.0, 10.0, 0.0);
-        let load_weight = Weight::new::<pound>(10000.0);
+        let load_weight = Mass::new::<pound>(10000.0);
         
         // Tipping edge at rear, 10 ft behind COG
         let tipping_edge = na::Point3::new(0.0, 0.0, -10.0);
@@ -211,13 +210,13 @@ mod tests {
     #[test]
     fn test_outrigger_reactions_centered_load() {
         let config = OutriggerConfig::square(
-            Distance::new::<foot>(20.0),
+            Length::new::<foot>(20.0),
             Force::new::<pound_force>(50000.0),
         );
         
         // Load centered over crane base
         let cog = na::Point3::new(0.0, 5.0, 0.0);
-        let weight = Weight::new::<pound>(40000.0);
+        let weight = Mass::new::<pound>(40000.0);
         
         let reactions = calculate_outrigger_reactions(&config, cog, weight);
         

@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 nalgebra = { version = "0.34", features = ["std", "serde-serialize", "libm"] }
-uom = { version = "0.37", features = ["std", "f64", "serde"] }
+uom = { version = "0.37", features = ["std", "f64", "serde", "autoconvert"] }
 thiserror = "2.0"
 toml = "0.9"
 csv = "1.4"

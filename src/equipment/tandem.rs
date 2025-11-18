@@ -16,7 +16,7 @@ pub struct TandemLift<C: Crane> {
     pub cranes: Vec<TandemCrane<C>>,
     
     /// Total load being lifted
-    pub total_load: Weight,
+    pub total_load: Mass,
     
     /// Load center of gravity
     pub load_cog: na::Point3<f64>,
@@ -57,18 +57,18 @@ pub enum TandemRiggingType {
     
     /// Spreader beam - load distributed through beam
     SpreaderBeam {
-        beam_weight: Weight,
-        beam_length: Distance,
+        beam_weight: Mass,
+        beam_length: Length,
     },
     
     /// Equalizer beam - automatic load sharing
     EqualizerBeam {
-        beam_weight: Weight,
+        beam_weight: Mass,
     },
 }
 
 impl<C: Crane> TandemLift<C> {
-    pub fn new(total_load: Weight, load_cog: na::Point3<f64>) -> Self {
+    pub fn new(total_load: Mass, load_cog: na::Point3<f64>) -> Self {
         Self {
             cranes: Vec::new(),
             total_load,
@@ -128,7 +128,7 @@ impl<C: Crane> TandemLift<C> {
         let hook2 = self.cranes[1].hook_position;
         let cog = self.load_cog;
         
-        // Distance from each hook to load COG (in horizontal plane)
+        // Length from each hook to load COG (in horizontal plane)
         let d1 = ((hook1.x - cog.x).powi(2) + (hook1.z - cog.z).powi(2)).sqrt();
         let d2 = ((hook2.x - cog.x).powi(2) + (hook2.z - cog.z).powi(2)).sqrt();
         
@@ -187,7 +187,7 @@ impl<C: Crane> TandemLift<C> {
         
         // Validate each crane
         for tandem_crane in &self.cranes {
-            let crane_load = Weight::new::<pound>(
+            let crane_load = Mass::new::<pound>(
                 self.total_load.get::<pound>() * tandem_crane.load_share
             );
             
@@ -195,7 +195,7 @@ impl<C: Crane> TandemLift<C> {
             let rated_capacity = tandem_crane.crane.rated_capacity();
             
             // Apply tandem capacity factor (75% of chart)
-            let allowed_capacity = Weight::new::<pound>(
+            let allowed_capacity = Mass::new::<pound>(
                 rated_capacity.get::<pound>() * self.capacity_factor
             );
             
@@ -203,8 +203,8 @@ impl<C: Crane> TandemLift<C> {
             if crane_load > allowed_capacity {
                 return Err(TandemLiftError::CraneOverCapacity {
                     crane_index: crane_analyses.len(),
-                    load: DisplayWeight(crane_load),
-                    allowed: DisplayWeight(allowed_capacity),
+                    load: DisplayMass(crane_load),
+                    allowed: DisplayMass(allowed_capacity),
                 });
             }
             
@@ -230,7 +230,7 @@ impl<C: Crane> TandemLift<C> {
 
 #[derive(Debug)]
 pub struct TandemLiftAnalysis {
-    pub total_load: Weight,
+    pub total_load: Mass,
     pub crane_analyses: Vec<CraneAnalysis>,
     pub is_valid: bool,
 }
@@ -241,13 +241,13 @@ pub struct CraneAnalysis {
     pub load_share: f64,
     
     /// Actual load on this crane
-    pub crane_load: Weight,
+    pub crane_load: Mass,
     
     /// Crane's rated capacity at current config
-    pub rated_capacity: Weight,
+    pub rated_capacity: Mass,
     
     /// Allowed capacity with tandem safety factor
-    pub allowed_capacity: Weight,
+    pub allowed_capacity: Mass,
     
     /// Utilization ratio (actual / allowed)
     pub utilization: f64,
@@ -267,8 +267,8 @@ pub enum TandemLiftError {
     #[error("Crane {crane_index} over capacity: load {load} exceeds allowed {allowed}")]
     CraneOverCapacity {
         crane_index: usize,
-        load: DisplayWeight,
-        allowed: DisplayWeight,
+        load: DisplayMass,
+        allowed: DisplayMass,
     },
     
     #[error("Crane validation failed: {0}")]
@@ -284,7 +284,7 @@ mod tests {
     #[test]
     fn test_two_crane_load_distribution() {
         let mut tandem = TandemLift::new(
-            Weight::new::<pound>(100000.0),
+            Mass::new::<pound>(100000.0),
             na::Point3::new(50.0, 10.0, 0.0), // Load COG
         );
         
@@ -292,8 +292,8 @@ mod tests {
         let crane1 = MobileCrane::new(
             "Grove",
             "GMK5250L",
-            Distance::new::<foot>(100.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(100.0),
+            Length::new::<foot>(10.0),
         );
         tandem.add_crane(crane1, na::Point3::new(0.0, 10.0, 0.0));
         
@@ -301,8 +301,8 @@ mod tests {
         let crane2 = MobileCrane::new(
             "Grove",
             "GMK5250L",
-            Distance::new::<foot>(100.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(100.0),
+            Length::new::<foot>(10.0),
         );
         tandem.add_crane(crane2, na::Point3::new(100.0, 10.0, 0.0));
         
@@ -317,7 +317,7 @@ mod tests {
     #[test]
     fn test_asymmetric_load_distribution() {
         let mut tandem = TandemLift::new(
-            Weight::new::<pound>(100000.0),
+            Mass::new::<pound>(100000.0),
             na::Point3::new(30.0, 10.0, 0.0), // Load COG offset
         );
         
@@ -325,8 +325,8 @@ mod tests {
         let crane1 = MobileCrane::new(
             "Grove",
             "GMK5250L",
-            Distance::new::<foot>(100.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(100.0),
+            Length::new::<foot>(10.0),
         );
         tandem.add_crane(crane1, na::Point3::new(0.0, 10.0, 0.0));
         
@@ -334,8 +334,8 @@ mod tests {
         let crane2 = MobileCrane::new(
             "Grove",
             "GMK5250L",
-            Distance::new::<foot>(100.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(100.0),
+            Length::new::<foot>(10.0),
         );
         tandem.add_crane(crane2, na::Point3::new(100.0, 10.0, 0.0));
         

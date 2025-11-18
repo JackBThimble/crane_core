@@ -1,6 +1,4 @@
-use nalgebra as na;
 use crate::types::*;
-use crate::types::units::*;
 
 /// Dynamic load calculations (for future implementation)
 /// 
@@ -36,7 +34,7 @@ pub enum LiftType {
 /// 
 /// T = 2π√(L/g)
 /// where L is cable length, g is gravity
-pub fn pendulum_period(cable_length: Distance) -> f64 {
+pub fn pendulum_period(cable_length: Length) -> f64 {
     let l = cable_length.get::<foot>();
     let g = 32.174; // ft/s² (gravity)
     

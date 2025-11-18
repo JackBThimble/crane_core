@@ -16,7 +16,7 @@ use crate::{equipment::Crane, physics::ground_bearing::*, types::*};
 #[derive(Debug, Clone)]
 pub struct LiftPlan {
     /// Load weight
-    pub load_weight: Weight,
+    pub load_weight: Mass,
     
     /// Load dimensions (for wind sail area)
     pub load_dimensions: LoadDimensions,
@@ -36,9 +36,9 @@ pub struct LiftPlan {
 
 #[derive(Debug, Clone)]
 pub struct LoadDimensions {
-    pub length: Distance,
-    pub width: Distance,
-    pub height: Distance,
+    pub length: Length,
+    pub width: Length,
+    pub height: Length,
 }
 
 impl LoadDimensions {
@@ -81,7 +81,7 @@ pub enum RiggingConfig {
 #[derive(Debug, Clone)]
 pub struct RiggingHardware {
     pub item_type: String,
-    pub capacity: Weight,
+    pub capacity: Mass,
     pub description: String,
 }
 

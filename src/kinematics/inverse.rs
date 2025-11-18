@@ -1,6 +1,5 @@
 use nalgebra as na;
 use crate::types::*;
-use crate::types::units::*;
 use crate::kinematics::forward::*;
 
 /// Inverse kinematics solver
@@ -22,10 +21,10 @@ pub struct JointLimits {
     pub boom_angle_max: Angle,
     
     /// Minimum boom length
-    pub boom_length_min: Distance,
+    pub boom_length_min: Length,
     
     /// Maximum boom length
-    pub boom_length_max: Distance,
+    pub boom_length_max: Length,
     
     /// Maximum swing angle (typically 360 degrees)
     pub swing_max: Angle,
@@ -36,8 +35,8 @@ impl Default for JointLimits {
         Self {
             boom_angle_min: Angle::new::<degree>(0.0),
             boom_angle_max: Angle::new::<degree>(85.0), // Most cranes can't go vertical
-            boom_length_min: Distance::new::<foot>(40.0),
-            boom_length_max: Distance::new::<foot>(200.0),
+            boom_length_min: Length::new::<foot>(40.0),
+            boom_length_max: Length::new::<foot>(200.0),
             swing_max: Angle::new::<degree>(360.0),
         }
     }
@@ -73,7 +72,7 @@ impl InverseKinematics {
     /// Solve IK for a target hook position (no jib)
     /// 
     /// Returns joint configuration to reach target
-    pub fn solve(&self, target: na::Point3<f64>, boom_length: Distance) -> Result<IKSolution, IKError> {
+    pub fn solve(&self, target: na::Point3<f64>, boom_length: Length) -> Result<IKSolution, IKError> {
         let pivot = self.base.pivot_point();
         
         // 1. Calculate swing angle (trivial - just arctan2)
@@ -149,7 +148,7 @@ impl InverseKinematics {
         let required_length = (reach*reach + height*height).sqrt();
         
         // Check if within boom length limits
-        let boom_length = Distance::new::<foot>(required_length);
+        let boom_length = Length::new::<foot>(required_length);
         if required_length < self.limits.boom_length_min.get::<foot>() ||
            required_length > self.limits.boom_length_max.get::<foot>() {
             return Err(IKError::Unreachable);
@@ -195,7 +194,7 @@ impl InverseKinematics {
     }
     
     /// Check if joint configuration is within limits
-    fn check_limits(&self, boom_angle: Angle, boom_length: Distance, swing: Angle) -> bool {
+    fn check_limits(&self, boom_angle: Angle, boom_length: Length, swing: Angle) -> bool {
         boom_angle >= self.limits.boom_angle_min &&
         boom_angle <= self.limits.boom_angle_max &&
         boom_length >= self.limits.boom_length_min &&
@@ -220,7 +219,7 @@ impl InverseKinematics {
         
         for i in 0..num_samples {
             let t = i as f64 / (num_samples - 1) as f64;
-            let boom_len = Distance::new::<foot>(min_len + t * (max_len - min_len));
+            let boom_len = Length::new::<foot>(min_len + t * (max_len - min_len));
             
             if let Ok(solution) = self.solve(target, boom_len) {
                 if solution.within_limits {
@@ -242,17 +241,17 @@ mod tests {
     #[test]
     fn test_simple_ik_solution() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let ik = InverseKinematics::new(base, JointLimits::default());
         
         // Target: 70 ft forward, 80 ft high (should require ~45 degree boom at 100 ft)
         let target = na::Point3::new(0.0, 80.0, 70.0);
-        let boom_length = Distance::new::<foot>(100.0);
+        let boom_length = Length::new::<foot>(100.0);
         
         let solution = ik.solve(target, boom_length).unwrap();
         
@@ -274,17 +273,17 @@ mod tests {
     #[test]
     fn test_ik_with_swing() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let ik = InverseKinematics::new(base, JointLimits::default());
         
         // Target: 50 ft to the right (X), 80 ft high
         let target = na::Point3::new(50.0, 80.0, 0.0);
-        let boom_length = Distance::new::<foot>(100.0);
+        let boom_length = Length::new::<foot>(100.0);
         
         let solution = ik.solve(target, boom_length).unwrap();
         
@@ -299,17 +298,17 @@ mod tests {
     #[test]
     fn test_ik_unreachable() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let ik = InverseKinematics::new(base, JointLimits::default());
         
         // Target way too far: 200 ft away with only 100 ft boom
         let target = na::Point3::new(0.0, 10.0, 200.0);
-        let boom_length = Distance::new::<foot>(100.0);
+        let boom_length = Length::new::<foot>(100.0);
         
         let result = ik.solve(target, boom_length);
         
@@ -320,10 +319,10 @@ mod tests {
     #[test]
     fn test_ik_telescoping() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let ik = InverseKinematics::new(base, JointLimits::default());
@@ -345,10 +344,10 @@ mod tests {
     #[test]
     fn test_roundtrip_fk_ik() {
         let base = CraneBase::new(
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(0.0),
-            Distance::new::<foot>(10.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(0.0),
+            Length::new::<foot>(10.0),
         );
         
         let fk = ForwardKinematics::new(base);
@@ -358,7 +357,7 @@ mod tests {
         let original_joints = JointConfig {
             swing: Angle::new::<degree>(30.0),
             boom_angle: Angle::new::<degree>(50.0),
-            boom_length: Distance::new::<foot>(120.0),
+            boom_length: Length::new::<foot>(120.0),
             jib: None,
         };
         

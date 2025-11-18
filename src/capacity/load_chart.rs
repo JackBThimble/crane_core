@@ -1,4 +1,3 @@
-use crate::types::units::*;
 use crate::types::*;
 use crate::equipment::*;
 use serde::{Deserialize, Serialize};
@@ -50,10 +49,10 @@ pub enum LoadChartError {
     UnitError(#[from] UnitError),
 
     #[error("Boom length {0} ft not found")]
-    BoomLengthNotFound(DisplayDistance),
+    BoomLengthNotFound(DisplayLength),
 
     #[error("Radius {0} ft out of range")]
-    RadiusOutOfRange(DisplayDistance),
+    RadiusOutOfRange(DisplayLength),
 
     #[error("No data available for interpolation")]
     NoData,
@@ -129,7 +128,7 @@ pub struct BoomConfiguration {
 
 /// TODO: DO WE NEED THIS???
 impl BoomConfiguration {
-    pub fn length_distance(&self) -> Result<Distance, UnitError> {
+    pub fn length_distance(&self) -> Result<Length, UnitError> {
         self.length.to_distance()
     }
 }
@@ -147,7 +146,7 @@ pub struct JibConfiguration {
 }
 
 impl JibConfiguration {
-    pub fn length_distance(&self) -> Result<Distance, UnitError> {
+    pub fn length_distance(&self) -> Result<Length, UnitError> {
         self.length.to_distance()
     }
 
@@ -162,15 +161,15 @@ impl JibConfiguration {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CounterweightConfiguration {
-    /// Weight
-    pub weight: WeightValue,
+    /// Mass  (weight)
+    pub weight: MassValue,
     pub configuration: String,
 }
 
 impl CounterweightConfiguration {
     /// Get weight as UOM Mass type
-    pub fn weight_mass(&self) -> Result<Weight, UnitError> {
-        self.weight.to_weight()
+    pub fn to_uom_mass(&self) -> Result<Mass, UnitError> {
+        self.weight.to_mass()
     }
 }
 
@@ -183,7 +182,7 @@ pub struct CapacityData {
 
     /// For each boom length, a list of (radius, capacity) pairs
     /// Units specified by chart.units
-    pub data: Vec<Vec<(LengthValue, WeightValue)>>,
+    pub data: Vec<Vec<(LengthValue, MassValue)>>,
 }
 
 impl CapacityData {
@@ -200,32 +199,32 @@ impl CapacityData {
     pub fn capacity_at(
         &self,
         boom_idx: usize,
-        radius: Distance,
+        radius: Length,
         epsilon: Option<f64>,
-    ) -> Result<Option<Weight>, UnitError> {
+    ) -> Result<Option<Mass>, UnitError> {
         let eps = epsilon.unwrap_or(0.1);
         for (r_val, w_val) in &self.data[boom_idx] {
             let r = r_val.to_distance()?;
             if (r.get::<foot>() - radius.get::<foot>()).abs() < eps {
-                return Ok(Some(w_val.to_weight()?));
+                return Ok(Some(w_val.to_mass()?));
             }
         }
         Ok(None)
     }
 
     /// Get all boom lengths as UOM types
-    pub fn boom_lengths(&self) -> Result<Vec<Distance>, UnitError> {
+    pub fn boom_lengths(&self) -> Result<Vec<Length>, UnitError> {
         self.boom_lengths.iter().map(|v| v.to_distance()).collect()
     }
 
-    pub fn capacity_points(&self, boom_idx: usize) -> Result<Vec<(Distance, Weight)>, UnitError> {
+    pub fn capacity_points(&self, boom_idx: usize) -> Result<Vec<(Length, Mass)>, UnitError> {
         self.data[boom_idx]
             .iter()
-            .map(|(r, w)| Ok((r.to_distance()?, w.to_weight()?)))
+            .map(|(r, w)| Ok((r.to_distance()?, w.to_mass()?)))
             .collect()
     }
     /// Get all radii for a given boom length (raw values)
-    pub fn radii_for_boom(&self, boom_idx: usize) -> Result<Vec<Distance>, UnitError> {
+    pub fn radii_for_boom(&self, boom_idx: usize) -> Result<Vec<Length>, UnitError> {
         self.data[boom_idx]
             .iter()
             .map(|(r, _)| Ok(r.to_distance()?))
@@ -237,14 +236,14 @@ impl LoadChart {
     /// Get capacity at exact boom length and radius (converts to/from chart units)
     pub fn capacity_exact(
         &self,
-        boom_length: Distance,
-        radius: Distance,
-    ) -> Result<Weight, LoadChartError> {
+        boom_length: Length,
+        radius: Length,
+    ) -> Result<Mass, LoadChartError> {
         let booms = self.capacity_data.boom_lengths()?;
         let boom_idx = booms
             .iter()
             .position(|&b| (b - boom_length).abs().get::<foot>() < 0.01)
-            .ok_or_else(|| LoadChartError::BoomLengthNotFound(DisplayDistance(boom_length)))?;
+            .ok_or_else(|| LoadChartError::BoomLengthNotFound(DisplayLength(boom_length)))?;
 
         let points = self.capacity_data.capacity_points(boom_idx)?;
         for (r, w) in points {
@@ -252,15 +251,15 @@ impl LoadChart {
                 return Ok(w);
             }
         }
-        Err(LoadChartError::RadiusOutOfRange(DisplayDistance(radius)))
+        Err(LoadChartError::RadiusOutOfRange(DisplayLength(radius)))
     }
 
     /// Get interpolated capacity at any boom length and radius
     pub fn capacity_interpolated(
         &self,
-        boom_length: Distance,
-        radius: Distance,
-    ) -> Result<Weight, LoadChartError> {
+        boom_length: Length,
+        radius: Length,
+    ) -> Result<Mass, LoadChartError> {
         // Find surrounding boom lengths
         let (boom_lower_idx, boom_upper_idx) = self.find_boom_bounds(boom_length)?;
 
@@ -283,14 +282,14 @@ impl LoadChart {
     }
 
     /// Find the indices of boom lengths that bound the requested boom length
-    fn find_boom_bounds(&self, boom_length: Distance) -> Result<(usize, usize), LoadChartError> {
+    fn find_boom_bounds(&self, boom_length: Length) -> Result<(usize, usize), LoadChartError> {
         let booms = self.capacity_data.boom_lengths()?;
 
         if booms.is_empty() {
             return Err(LoadChartError::NoData);
         }
 
-        let epsilon = Distance::new::<foot>(0.1);
+        let epsilon = Length::new::<foot>(0.1);
 
         let lower_idx = booms
             .iter()
@@ -298,7 +297,7 @@ impl LoadChart {
             .filter(|&(_, &b)| b <= boom_length + epsilon)
             .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
             .map(|(i, _)| i)
-            .ok_or_else(|| LoadChartError::BoomLengthNotFound(DisplayDistance(boom_length)))?;
+            .ok_or_else(|| LoadChartError::BoomLengthNotFound(DisplayLength(boom_length)))?;
 
         let upper_idx = booms
             .iter()
@@ -306,7 +305,7 @@ impl LoadChart {
             .filter(|&(_, &b)| b >= boom_length - epsilon)
             .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
             .map(|(i, _)| i)
-            .ok_or_else(|| LoadChartError::BoomLengthNotFound(DisplayDistance(boom_length)))?;
+            .ok_or_else(|| LoadChartError::BoomLengthNotFound(DisplayLength(boom_length)))?;
 
         Ok((lower_idx, upper_idx))
     }
@@ -315,29 +314,29 @@ impl LoadChart {
     fn interpolate_radius(
         &self,
         boom_idx: usize,
-        radius: Distance,
-    ) -> Result<Weight, LoadChartError> {
+        radius: Length,
+    ) -> Result<Mass, LoadChartError> {
         let points = &self.capacity_data.capacity_points(boom_idx)?;
 
         if points.is_empty() {
             return Err(LoadChartError::NoData);
         }
 
-        let epsilon = Distance::new::<foot>(0.1);
+        let epsilon = Length::new::<foot>(0.1);
 
         // Find lower radius
         let lower = points
             .iter()
             .filter(|(r, _)| *r <= radius + epsilon)
             .max_by(|a, b| a.0.partial_cmp(&b.0).unwrap())
-            .ok_or_else(|| LoadChartError::RadiusOutOfRange(DisplayDistance(radius)))?;
+            .ok_or_else(|| LoadChartError::RadiusOutOfRange(DisplayLength(radius)))?;
 
         // Find upper radius
         let upper = points
             .iter()
             .filter(|(r, _)| *r >= radius - epsilon)
             .min_by(|a, b| a.0.partial_cmp(&b.0).unwrap())
-            .ok_or_else(|| LoadChartError::RadiusOutOfRange(DisplayDistance(radius)))?;
+            .ok_or_else(|| LoadChartError::RadiusOutOfRange(DisplayLength(radius)))?;
 
         // If radii are the same, no interpolation needed
         if (lower.0 - upper.0).abs() < epsilon {
@@ -376,7 +375,7 @@ impl LoadChart {
     }
 
     /// Get all boom lengths as UOM types
-    pub fn boom_lengths(&self) -> Result<Vec<Distance>, LoadChartError> {
+    pub fn boom_lengths(&self) -> Result<Vec<Length>, LoadChartError> {
         let boom_lens = self.capacity_data.boom_lengths()?;
         if boom_lens.is_empty() {
             return Err(LoadChartError::NoData);
@@ -389,7 +388,7 @@ impl LoadChart {
     pub fn capacity_points(
         &self,
         boom_idx: usize,
-    ) -> Result<Vec<(Distance, Weight)>, LoadChartError> {
+    ) -> Result<Vec<(Length, Mass)>, LoadChartError> {
         let points = self.capacity_data.capacity_points(boom_idx)?;
 
         if points.is_empty() {
@@ -400,7 +399,7 @@ impl LoadChart {
     }
 
     /// Check if boom length is within chart bounds
-    pub fn is_boom_valid(&self, boom_length: Distance) -> Result<bool, LoadChartError> {
+    pub fn is_boom_valid(&self, boom_length: Length) -> Result<bool, LoadChartError> {
         let booms = self.capacity_data.boom_lengths()?;
         if booms.is_empty() {
             return Ok(false);
@@ -421,8 +420,8 @@ impl LoadChart {
     /// Check if radius is valid for given boom length
     pub fn is_radius_valid(
         &self,
-        boom_length: Distance,
-        radius: Distance,
+        boom_length: Length,
+        radius: Length,
     ) -> Result<bool, LoadChartError> {
         let (lower_idx, upper_idx) = self.find_boom_bounds(boom_length)?;
 
@@ -433,7 +432,7 @@ impl LoadChart {
                 continue;
             }
 
-            let radii: Vec<Distance> = points.iter().map(|(r, _)| *r).collect();
+            let radii: Vec<Length> = points.iter().map(|(r, _)| *r).collect();
             let min = radii
                 .iter()
                 .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Less))
@@ -454,8 +453,8 @@ impl LoadChart {
     /// Get valid radius range for a given boom length
     pub fn radius_range(
         &self,
-        boom_length: Distance,
-    ) -> Result<(Distance, Distance), LoadChartError> {
+        boom_length: Length,
+    ) -> Result<(Length, Length), LoadChartError> {
         let (lower_idx, upper_idx) = self.find_boom_bounds(boom_length)?;
 
         let mut all_radii = Vec::new();
@@ -477,8 +476,8 @@ impl LoadChart {
     }
 
     /// Get maximum capacity in entire chart
-    pub fn max_capacity(&self) -> Result<Weight, LoadChartError> {
-        let mut max_cap = Weight::new::<pound>(0.0);
+    pub fn max_capacity(&self) -> Result<Mass, LoadChartError> {
+        let mut max_cap = Mass::new::<pound>(0.0);
 
         for boom_idx in 0..self.capacity_data.boom_lengths.len() {
             let points = self.capacity_data.capacity_points(boom_idx)?;
@@ -497,8 +496,8 @@ impl LoadChart {
     }
 
     /// Get minimum radius (closest to crane) across all boom lengths
-    pub fn min_radius(&self) -> Result<Distance, LoadChartError> {
-        let mut min_rad = Distance::new::<foot>(f64::MAX);
+    pub fn min_radius(&self) -> Result<Length, LoadChartError> {
+        let mut min_rad = Length::new::<foot>(f64::MAX);
 
         for boom_idx in 0..self.capacity_data.boom_lengths.len() {
             let points = self.capacity_data.capacity_points(boom_idx)?;
@@ -517,8 +516,8 @@ impl LoadChart {
     }
 
     /// Get maximum radius (furthest from crane) across all boom lengths
-    pub fn max_radius(&self) -> Result<Distance, LoadChartError> {
-        let mut max_rad = Distance::new::<foot>(0.0);
+    pub fn max_radius(&self) -> Result<Length, LoadChartError> {
+        let mut max_rad = Length::new::<foot>(0.0);
 
         for boom_idx in 0..self.capacity_data.boom_lengths.len() {
             let points = self.capacity_data.capacity_points(boom_idx)?;
@@ -537,7 +536,7 @@ impl LoadChart {
     }
 
     /// Get boom length range
-    pub fn boom_range(&self) -> Result<(Distance, Distance), LoadChartError> {
+    pub fn boom_range(&self) -> Result<(Length, Length), LoadChartError> {
         let booms = self.capacity_data.boom_lengths()?;
 
         let min = booms
@@ -555,17 +554,17 @@ impl LoadChart {
     /// Validate a lift configuration is within chart bounds
     pub fn validate_bounds(
         &self,
-        boom_length: Distance,
-        radius: Distance,
+        boom_length: Length,
+        radius: Length,
     ) -> Result<(), LoadChartError> {
         if !self.is_boom_valid(boom_length)? {
-            return Err(LoadChartError::BoomLengthNotFound(DisplayDistance(
+            return Err(LoadChartError::BoomLengthNotFound(DisplayLength(
                 boom_length,
             )));
         }
 
         if !self.is_radius_valid(boom_length, radius)? {
-            return Err(LoadChartError::RadiusOutOfRange(DisplayDistance(radius)));
+            return Err(LoadChartError::RadiusOutOfRange(DisplayLength(radius)));
         }
 
         Ok(())
@@ -574,12 +573,12 @@ impl LoadChart {
     /// Apply a derating factor (for wind, side loading, etc.)
     pub fn derated_capacity(
         &self,
-        boom_length: Distance,
-        radius: Distance,
+        boom_length: Length,
+        radius: Length,
         factor: f64,
-    ) -> Result<Weight, LoadChartError> {
+    ) -> Result<Mass, LoadChartError> {
         let capacity = self.capacity_interpolated(boom_length, radius)?;
-        Ok(Weight::new::<pound>(capacity.get::<pound>() * factor))
+        Ok(Mass::new::<pound>(capacity.get::<pound>() * factor))
     }
 }
 
@@ -615,7 +614,7 @@ impl ConfigurationMatch for BoomConfiguration {
 
 impl ConfigurationMatch for CounterweightConfiguration {
     fn matches(&self, other: &Self) -> bool {
-        match (self.weight_mass(), other.weight_mass()) {
+        match (self.to_uom_mass(), other.to_uom_mass()) {
             (Ok(my_weight), Ok(other_weight)) => (my_weight - other_weight).abs().get::<pound>() < 1.0,
             _ => false,
         }
@@ -694,15 +693,15 @@ mod tests {
         capacity_data.data = vec![vec![
             (
                 LengthValue::new(20.0, "ft"),
-                WeightValue::new(242500.0, "lbs"),
+                MassValue::new(242500.0, "lbs"),
             ),
             (
                 LengthValue::new(40.0, "ft"),
-                WeightValue::new(152000.0, "lbs"),
+                MassValue::new(152000.0, "lbs"),
             ),
             (
                 LengthValue::new(60.0, "ft"),
-                WeightValue::new(97000.0, "lbs"),
+                MassValue::new(97000.0, "lbs"),
             ),
         ]];
 
@@ -733,11 +732,11 @@ mod tests {
         // 47 m boom (roughly 154 ft)
         capacity_data.boom_lengths = vec![LengthValue::new(47.0, "m")];
         capacity_data.data = vec![vec![
-            (LengthValue::new(6.0, "m"), WeightValue::new(110000.0, "kg")), // ~20 ft, ~242k lbs
-            (LengthValue::new(12.0, "m"), WeightValue::new(69000.0, "kg")), // ~40 ft, ~152k lbs
-            (LengthValue::new(18.0, "m"), WeightValue::new(44000.0, "kg")), // ~60 ft, ~97k lbs
-            (LengthValue::new(24.0, "m"), WeightValue::new(31000.0, "kg")), // ~80 ft, ~68k lbs
-            (LengthValue::new(30.0, "m"), WeightValue::new(23000.0, "kg")), // ~100 ft, ~50k lbs
+            (LengthValue::new(6.0, "m"), MassValue::new(110000.0, "kg")), // ~20 ft, ~242k lbs
+            (LengthValue::new(12.0, "m"), MassValue::new(69000.0, "kg")), // ~40 ft, ~152k lbs
+            (LengthValue::new(18.0, "m"), MassValue::new(44000.0, "kg")), // ~60 ft, ~97k lbs
+            (LengthValue::new(24.0, "m"), MassValue::new(31000.0, "kg")), // ~80 ft, ~68k lbs
+            (LengthValue::new(30.0, "m"), MassValue::new(23000.0, "kg")), // ~100 ft, ~50k lbs
         ]];
         LoadChart {
             id: "test_metric".into(),
@@ -765,7 +764,7 @@ mod tests {
         let chart = create_test_chart_us();
 
         let capacity = chart
-            .capacity_exact(Distance::new::<foot>(154.2), Distance::new::<foot>(40.0))
+            .capacity_exact(Length::new::<foot>(154.2), Length::new::<foot>(40.0))
             .unwrap();
 
         assert_relative_eq!(capacity.get::<pound>(), 152000.0);
@@ -777,7 +776,7 @@ mod tests {
 
         // Test at 30 ft (midpoint between 20 and 40)
         let capacity = chart
-            .capacity_interpolated(Distance::new::<foot>(154.2), Distance::new::<foot>(30.0))
+            .capacity_interpolated(Length::new::<foot>(154.2), Length::new::<foot>(30.0))
             .unwrap();
 
         // Should be ~197,250 lbs (midpoint between 242,500 and 152,000)
@@ -790,7 +789,7 @@ mod tests {
 
         // Query in feet, but chart is in meters
         let capacity = chart
-            .capacity_exact(Distance::new::<meter>(47.0), Distance::new::<meter>(12.0))
+            .capacity_exact(Length::new::<meter>(47.0), Length::new::<meter>(12.0))
             .unwrap();
 
         assert_relative_eq!(capacity.get::<kilogram>(), 69000.0);
@@ -803,8 +802,8 @@ mod tests {
         // Query in feet, chart automatically converts
         let capacity = chart
             .capacity_exact(
-                Distance::new::<foot>(154.199), // ~47 meters
-                Distance::new::<foot>(39.3701),  // ~12 meters
+                Length::new::<foot>(154.199), // ~47 meters
+                Length::new::<foot>(39.3701),  // ~12 meters
             )
             .unwrap();
 
@@ -818,11 +817,11 @@ mod tests {
 
         // Same query in different units should give same result
         let cap_ft = chart
-            .capacity_exact(Distance::new::<foot>(154.2), Distance::new::<foot>(60.0))
+            .capacity_exact(Length::new::<foot>(154.2), Length::new::<foot>(60.0))
             .unwrap();
 
         let cap_m = chart
-            .capacity_exact(Distance::new::<meter>(47.0), Distance::new::<meter>(18.288))
+            .capacity_exact(Length::new::<meter>(47.0), Length::new::<meter>(18.288))
             .unwrap();
 
         assert_relative_eq!(cap_ft.get::<pound>(), cap_m.get::<pound>(), epsilon = 100.0);
@@ -836,11 +835,11 @@ mod tests {
         data.data = vec![vec![
             (
                 LengthValue::new(20.0, "ft"),
-                WeightValue::new(50000.0, "lbs"),
+                MassValue::new(50000.0, "lbs"),
             ),
             (
                 LengthValue::new(40.0, "ft"),
-                WeightValue::new(30000.0, "lbs"),
+                MassValue::new(30000.0, "lbs"),
             ),
         ]];
 
@@ -881,19 +880,19 @@ mod tests {
     #[test]
     fn test_counterweight_conversion() {
         let cw = CounterweightConfiguration {
-            weight: WeightValue::new(110200.0, "lbs"),
+            weight: MassValue::new(110200.0, "lbs"),
             configuration: "Standard".into(),
         };
 
-        let weight = cw.weight_mass().unwrap();
+        let weight = cw.to_uom_mass().unwrap();
         assert_relative_eq!(weight.get::<pound>(), 110200.0);
 
         let cw_metric = CounterweightConfiguration {
-            weight: WeightValue::new(50000.0, "kg"),
+            weight: MassValue::new(50000.0, "kg"),
             configuration: "Standard".into(),
         };
 
-        let weight_metric = cw_metric.weight_mass().unwrap();
+        let weight_metric = cw_metric.to_uom_mass().unwrap();
         assert_relative_eq!(weight_metric.get::<kilogram>(), 50000.0);
         assert_relative_eq!(weight_metric.get::<pound>(), 110231.0, epsilon = 1.0);
     }

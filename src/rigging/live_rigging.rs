@@ -1,39 +1,38 @@
 use crate::types::*;
-use crate::types::units::*;
 
 /// Live rigging devices that can adjust tension
 #[derive(Debug, Clone)]
 pub enum LiveRiggingDevice {
     /// Chain fall (chain hoist) - manual or powered
     ChainFall {
-        capacity: Weight,
-        lift_height: Distance,
+        capacity: Mass,
+        lift_height: Length,
         is_powered: bool,
     },
     
     /// Lever hoist (come-along)
     LeverHoist {
-        capacity: Weight,
-        lift_height: Distance,
+        capacity: Mass,
+        lift_height: Length,
         lever_ratio: f64, // Mechanical advantage
     },
     
     /// Hydraulic jack
     HydraulicJack {
-        capacity: Weight,
-        stroke: Distance,
+        capacity: Mass,
+        stroke: Length,
     },
     
     /// Winch
     Winch {
-        capacity: Weight,
+        capacity: Mass,
         line_speed: f64, // ft/min
     },
 }
 
 impl LiveRiggingDevice {
     /// Get the rated capacity of this device
-    pub fn capacity(&self) -> Weight {
+    pub fn capacity(&self) -> Mass {
         match self {
             LiveRiggingDevice::ChainFall { capacity, .. } => *capacity,
             LiveRiggingDevice::LeverHoist { capacity, .. } => *capacity,
@@ -43,12 +42,12 @@ impl LiveRiggingDevice {
     }
     
     /// Check if device can handle the given load
-    pub fn can_handle(&self, load: Weight) -> bool {
+    pub fn can_handle(&self, load: Mass) -> bool {
         load <= self.capacity()
     }
     
     /// Calculate force required to lift (for manual devices)
-    pub fn pull_force(&self, load: Weight) -> Force {
+    pub fn pull_force(&self, load: Mass) -> Force {
         match self {
             LiveRiggingDevice::LeverHoist { lever_ratio, .. } => {
                 // Pull force = Load / mechanical advantage
@@ -127,8 +126,8 @@ pub mod chain_fall_specs {
     /// 1/4 ton chain fall
     pub fn quarter_ton() -> LiveRiggingDevice {
         LiveRiggingDevice::ChainFall {
-            capacity: Weight::new::<pound>(500.0),
-            lift_height: Distance::new::<foot>(10.0),
+            capacity: Mass::new::<pound>(500.0),
+            lift_height: Length::new::<foot>(10.0),
             is_powered: false,
         }
     }
@@ -136,8 +135,8 @@ pub mod chain_fall_specs {
     /// 1/2 ton chain fall
     pub fn half_ton() -> LiveRiggingDevice {
         LiveRiggingDevice::ChainFall {
-            capacity: Weight::new::<pound>(1000.0),
-            lift_height: Distance::new::<foot>(10.0),
+            capacity: Mass::new::<pound>(1000.0),
+            lift_height: Length::new::<foot>(10.0),
             is_powered: false,
         }
     }
@@ -145,8 +144,8 @@ pub mod chain_fall_specs {
     /// 1 ton chain fall
     pub fn one_ton() -> LiveRiggingDevice {
         LiveRiggingDevice::ChainFall {
-            capacity: Weight::new::<pound>(2000.0),
-            lift_height: Distance::new::<foot>(10.0),
+            capacity: Mass::new::<pound>(2000.0),
+            lift_height: Length::new::<foot>(10.0),
             is_powered: false,
         }
     }
@@ -154,8 +153,8 @@ pub mod chain_fall_specs {
     /// 2 ton chain fall
     pub fn two_ton() -> LiveRiggingDevice {
         LiveRiggingDevice::ChainFall {
-            capacity: Weight::new::<pound>(4000.0),
-            lift_height: Distance::new::<foot>(10.0),
+            capacity: Mass::new::<pound>(4000.0),
+            lift_height: Length::new::<foot>(10.0),
             is_powered: false,
         }
     }
@@ -163,8 +162,8 @@ pub mod chain_fall_specs {
     /// 3 ton chain fall
     pub fn three_ton() -> LiveRiggingDevice {
         LiveRiggingDevice::ChainFall {
-            capacity: Weight::new::<pound>(6000.0),
-            lift_height: Distance::new::<foot>(10.0),
+            capacity: Mass::new::<pound>(6000.0),
+            lift_height: Length::new::<foot>(10.0),
             is_powered: false,
         }
     }
